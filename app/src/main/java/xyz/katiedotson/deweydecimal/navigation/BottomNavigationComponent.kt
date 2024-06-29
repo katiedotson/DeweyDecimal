@@ -98,7 +98,7 @@ fun BottomNavBar(
 }
 
 @Composable
-fun NavButton(
+private fun NavButton(
     onClick: () -> Unit,
     isSelected: Boolean,
     imageVector: ImageVector,
