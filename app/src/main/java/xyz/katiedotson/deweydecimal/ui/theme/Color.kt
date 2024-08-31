@@ -18,7 +18,7 @@ val GreenThree = Color(0xFF96e6b3)
 val GreenFour = Color(0xFF568259)
 val GreenFive = Color(0xFF464E47)
 
-val BlueOne = Color(0xFFDCE7EF)
+val BlueOne = Color(0xFFE2EDF5)
 val BlueTwo = Color(0xFFA6C7E0)
 val BlueThree = Color(0xFF8DBEE3)
 val BlueFour = Color(0xFF5B94BF)
