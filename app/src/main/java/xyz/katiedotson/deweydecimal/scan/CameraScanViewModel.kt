@@ -1,8 +1,11 @@
 package xyz.katiedotson.deweydecimal.scan
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class CameraScanViewModel : ViewModel() {
+@HiltViewModel
+class CameraScanViewModel @Inject constructor() : ViewModel() {
     fun textDetected(text: DetectedText) {
         text.blocks
             .firstOrNull { it.startsWith(prefix = "ISBN") }
