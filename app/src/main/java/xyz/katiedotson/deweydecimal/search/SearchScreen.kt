@@ -1,4 +1,4 @@
-package xyz.katiedotson.deweydecimal.dashboard
+package xyz.katiedotson.deweydecimal.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,13 +18,13 @@ import xyz.katiedotson.deweydecimal.ui.theme.BlueFour
 import xyz.katiedotson.deweydecimal.ui.theme.BlueOne
 
 @Composable
-fun Dashboard(
-    onAddButtonClick: () -> Unit,
+internal fun SearchScreen(
+    onNavigateToCameraScanScreen: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Text("home screen")
         IconButton(
-            onClick = onAddButtonClick,
+            onClick = onNavigateToCameraScanScreen,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp),

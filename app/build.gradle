@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+    id "com.google.devtools.ksp" version "1.6.10-1.0.4"
     id 'com.google.dagger.hilt.android'
     id "io.gitlab.arturbosch.detekt" version "1.23.3"
 }
@@ -83,7 +84,13 @@ dependencies {
     // permissions
     implementation 'com.google.accompanist:accompanist-permissions:0.34.0'
 
-    // test
+    // networking
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.15.1'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.4.0'
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.1")
+
+// test
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'

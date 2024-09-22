@@ -1,4 +1,4 @@
-package xyz.katiedotson.deweydecimal.scan
+package xyz.katiedotson.deweydecimal.camerascan
 
 import android.content.Context
 import androidx.camera.core.ImageAnalysis
@@ -13,7 +13,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 @Composable
-fun buildCameraController(
+internal fun buildCameraController(
     onTextDetected: (DetectedText) -> Unit,
     context: Context = LocalContext.current,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,

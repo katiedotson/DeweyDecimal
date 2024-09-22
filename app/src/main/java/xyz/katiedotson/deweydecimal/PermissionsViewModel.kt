@@ -1,12 +1,17 @@
-package xyz.katiedotson.deweydecimal.dashboard
+package xyz.katiedotson.deweydecimal
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import xyz.katiedotson.deweydecimal.sharedpreferences.PermissionsPreferences
 import javax.inject.Inject
 
-class PermissionsViewModel @Inject constructor() : ViewModel() {
+@HiltViewModel
+class PermissionsViewModel @Inject constructor(
+    private val permissionsPreferences: PermissionsPreferences
+) : ViewModel() {
 
     private val _permissionEventState = MutableStateFlow<PermissionEvent>(PermissionEvent.None)
     val permissionEventState = _permissionEventState.asStateFlow()
@@ -21,6 +26,7 @@ class PermissionsViewModel @Inject constructor() : ViewModel() {
     }
 
     fun onPermissionResult(permissionWasGranted: Boolean) {
+        permissionsPreferences.cameraPermissionRequested = true
         val newValue = if (permissionWasGranted) PermissionEvent.Granted else PermissionEvent.Denied
         _permissionEventState.update {
             newValue
@@ -28,14 +34,15 @@ class PermissionsViewModel @Inject constructor() : ViewModel() {
     }
 
     fun validateCameraPermission(permissionIsGranted: Boolean, shouldShowRationale: Boolean) {
-        val update = if (permissionIsGranted) {
-            PermissionEvent.Granted
-        } else if (shouldShowRationale.not()) {
-            PermissionEvent.ShowFinalRationale
-        } else if (shouldShowRationale) {
-            PermissionEvent.ShowInitialRationale
-        } else {
-            PermissionEvent.LaunchRequest
+        // note: this currently isn't handling "ask everytime" properly :/
+        val update = when {
+            permissionIsGranted -> PermissionEvent.Granted
+            permissionsPreferences.cameraPermissionRequested.not() -> PermissionEvent.LaunchRequest
+            shouldShowRationale.not() && permissionsPreferences.cameraPermissionRequested -> {
+                PermissionEvent.ShowFinalRationale
+            }
+            shouldShowRationale -> PermissionEvent.ShowInitialRationale
+            else -> PermissionEvent.LaunchRequest
         }
         _permissionEventState.update {
             update
