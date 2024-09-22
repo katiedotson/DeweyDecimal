@@ -60,7 +60,8 @@ internal fun CameraScanScreen(
                         bottomSheetState = viewState.bottomSheetState,
                         sheetState = sheetState,
                         scope = scope,
-                        onBottomSheetDismissed = viewState.onBottomSheetDismissed
+                        onBottomSheetDismissed = viewState.onBottomSheetDismissed,
+                        onMatchConfirmed = viewState.onBookResultConfirmed
                     )
                 }
             }
@@ -74,7 +75,8 @@ private fun BottomSheetContent(
     bottomSheetState: BottomSheetState?,
     sheetState: SheetState,
     scope: CoroutineScope,
-    onBottomSheetDismissed: () -> Unit
+    onBottomSheetDismissed: () -> Unit,
+    onMatchConfirmed: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -112,7 +114,7 @@ private fun BottomSheetContent(
                 Text(text = "Try Again")
             }
             Button(
-                onClick = {}
+                onClick = onMatchConfirmed
             ) {
                 Text(text = "Confirm")
             }
@@ -131,6 +133,7 @@ private fun BottomSheetContentMatchFoundPreview() {
             author = "William Gibson"
         ),
         onBottomSheetDismissed = {},
+        onMatchConfirmed = {},
         scope = rememberCoroutineScope(),
         sheetState = rememberModalBottomSheetState()
     )

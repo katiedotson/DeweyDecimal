@@ -4,21 +4,28 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import xyz.katiedotson.deweydecimal.NavGraphItem
+import kotlinx.serialization.Serializable
 
 private const val AnimationDuration = 300
 
-fun NavController.navigateToCameraScanScreen() = navigate(route = NavGraphItem.Add.route)
+@Serializable data object CameraScanRoute
 
-fun NavGraphBuilder.cameraScanScreen() {
-    composable(
-        route = NavGraphItem.Add.route,
+fun NavController.navigateToCameraScanScreen(
+    navOptions: NavOptionsBuilder.() -> Unit = {}
+) = navigate(route = CameraScanRoute) {
+    navOptions()
+}
+
+fun NavGraphBuilder.cameraScanScreen(onNavigateToBookInput: (String) -> Unit) {
+    composable<CameraScanRoute>(
         enterTransition = {
             slideIntoContainer(
                 animationSpec = tween(
@@ -30,11 +37,26 @@ fun NavGraphBuilder.cameraScanScreen() {
         }
     ) {
         val cameraScanViewModel: CameraScanViewModel = hiltViewModel()
-        val vmState by cameraScanViewModel.state.collectAsState()
+        val vmState by cameraScanViewModel.state.collectAsStateWithLifecycle()
+        val events by cameraScanViewModel.events.collectAsStateWithLifecycle()
+
+        LaunchedEffect(events) {
+            val last = events.lastOrNull()
+            last?.let {
+                when (it) {
+                    is Event.BookResultConfirmed -> {
+                        onNavigateToBookInput(it.isbn)
+                        cameraScanViewModel.eventHandled(it)
+                    }
+                }
+            }
+        }
+
         val viewState = mapCameraScanViewState(
             vmState = vmState,
             onTextDetected = cameraScanViewModel::textDetected,
-            onBottomSheetDismissed = cameraScanViewModel::unpause
+            onBottomSheetDismissed = cameraScanViewModel::unpause,
+            onConfirmBookResult = cameraScanViewModel::onBookResultConfirmed
         )
         CameraScanScreen(
             viewState = viewState
@@ -45,6 +67,7 @@ fun NavGraphBuilder.cameraScanScreen() {
 internal data class CameraScanViewState(
     val onTextDetected: (DetectedText) -> Unit,
     val onBottomSheetDismissed: () -> Unit,
+    val onBookResultConfirmed: () -> Unit,
     val showSheet: Boolean,
     val bottomSheetState: BottomSheetState?,
 )
@@ -58,14 +81,16 @@ internal sealed class BottomSheetState {
 internal fun mapCameraScanViewState(
     vmState: CameraScanState,
     onTextDetected: (DetectedText) -> Unit,
-    onBottomSheetDismissed: () -> Unit
+    onBottomSheetDismissed: () -> Unit,
+    onConfirmBookResult: () -> Unit,
 ): CameraScanViewState {
     val bottomSheetState = mapBottomSheetState(vmState)
     return CameraScanViewState(
         bottomSheetState = bottomSheetState,
         onTextDetected = onTextDetected,
         onBottomSheetDismissed = onBottomSheetDismissed,
-        showSheet = bottomSheetState != null
+        showSheet = bottomSheetState != null,
+        onBookResultConfirmed = onConfirmBookResult
     )
 }
 

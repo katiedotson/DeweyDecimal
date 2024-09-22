@@ -22,8 +22,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import xyz.katiedotson.deweydecimal.bookinput.bookInputScreen
+import xyz.katiedotson.deweydecimal.bookinput.navigateToBookInputScreen
 import xyz.katiedotson.deweydecimal.camerascan.cameraScanScreen
 import xyz.katiedotson.deweydecimal.camerascan.navigateToCameraScanScreen
+import xyz.katiedotson.deweydecimal.search.SearchRoute
 import xyz.katiedotson.deweydecimal.search.searchScreen
 import xyz.katiedotson.deweydecimal.ui.theme.DeweyDecimalTheme
 
@@ -62,12 +65,15 @@ fun MainComponent() {
         Column(modifier = Modifier.padding(it)) {
             NavHost(
                 navController = navController,
-                startDestination = NavGraphItem.Search.route
+                startDestination = SearchRoute
             ) {
                 searchScreen(
                     onNavigateToCameraScan = navController::navigateToCameraScanScreen
                 )
-                cameraScanScreen()
+                cameraScanScreen(
+                    onNavigateToBookInput = navController::navigateToBookInputScreen
+                )
+                bookInputScreen()
             }
         }
     }
