@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -24,49 +26,100 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import xyz.katiedotson.deweydecimal.ui.theme.Typography
 
 @Composable
-internal fun BookInputScreen() {
+internal fun BookInputScreen(
+    viewState: BookInputViewState
+) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState())
     ) {
-        TitleSection()
-        AuthorSection()
-        LanguageSection()
-        PublisherSection()
-        PublishedYearSection()
-        SubjectsSection()
+        TitleSection(
+            titleLabel = viewState.titleLabel,
+            titleValue = viewState.titleValue,
+            onTitleChanged = viewState.onTitleChanged,
+        )
+        AuthorSection(
+            authorLabel = viewState.authorLabel,
+            authors = viewState.authors,
+            onAuthorFieldChanged = viewState.onAuthorFieldChanged,
+            onRemoveAuthor = viewState.onRemoveAuthor,
+            onAddAuthor = viewState.onAddAuthor,
+        )
+        ChipsSection(
+            sectionHeading = viewState.languagesHeading,
+            sectionSubheading = viewState.languagesSubheading,
+            values = viewState.languages,
+            onChange = viewState.onLanguageValueChange,
+        )
+        ChipsSection(
+            sectionHeading = viewState.publisherHeading,
+            sectionSubheading = viewState.publisherSubheading,
+            values = viewState.publishers,
+            onChange = viewState.onPublisherValueChange,
+        )
+        ChipsSection(
+            sectionHeading = viewState.subjectsHeading,
+            sectionSubheading = viewState.subjectsSubheading,
+            values = viewState.subjects,
+            onChange = viewState.onSubjectValueChange
+        )
     }
 }
 
 @Composable
-private fun TitleSection() {
+private fun TitleSection(
+    titleLabel: String,
+    titleValue: TextFieldValue,
+    onTitleChanged: (TextFieldValue) -> Unit,
+) {
     OutlinedTextField(
         label = {
-            Text(text = "Title")
+            Text(text = titleLabel)
         },
-        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-        value = TextFieldValue(text = "Burning Chrome"),
-        onValueChange = {}
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        value = titleValue,
+        onValueChange = onTitleChanged
     )
 }
 
 @Composable
-private fun AuthorSection() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            label = {
-                Text(text = "Author")
-            },
-            modifier = Modifier.weight(1f),
-            value = TextFieldValue(text = "William Gibson"),
-            onValueChange = {}
-        )
-        IconButton(onClick = {}) {
-            Icon(imageVector = Icons.Default.Clear, contentDescription = "Remove author")
+private fun AuthorSection(
+    authorLabel: String,
+    authors: List<TextFieldValue>,
+    onAuthorFieldChanged: (Int, TextFieldValue) -> Unit,
+    onRemoveAuthor: (Int) -> Unit,
+    onAddAuthor: () -> Unit
+) {
+    authors.forEachIndexed { index, textFieldValue ->
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                label = {
+                    Text(text = authorLabel)
+                },
+                modifier = Modifier.weight(1f),
+                value = textFieldValue,
+                onValueChange = {
+                    onAuthorFieldChanged(index, it)
+                }
+            )
+            IconButton(
+                onClick = {
+                    onRemoveAuthor(index)
+                }
+            ) {
+                Icon(imageVector = Icons.Default.Clear, contentDescription = "Remove author")
+            }
         }
     }
 
@@ -81,7 +134,7 @@ private fun AuthorSection() {
             style = Typography.labelSmall
         )
         IconButton(
-            onClick = {}
+            onClick = onAddAuthor
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
@@ -91,187 +144,69 @@ private fun AuthorSection() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LanguageSection() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            label = {
-                Text(text = "Language")
-            },
-            modifier = Modifier.weight(1f),
-            value = TextFieldValue(text = "English"),
-            onValueChange = {}
-        )
-        IconButton(onClick = {}) {
-            Icon(imageVector = Icons.Default.Clear, contentDescription = "Remove author")
-        }
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Spacer(
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = "Add another language",
-            style = Typography.labelSmall
-        )
-        IconButton(
-            onClick = {}
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add another language"
+private fun ChipsSection(
+    sectionHeading: String,
+    sectionSubheading: String,
+    values: ImmutableList<ChipViewState>,
+    onChange: (Int) -> Unit
+) {
+    Spacer(modifier = Modifier.padding(vertical = 8.dp))
+    Text(text = sectionHeading, style = Typography.labelLarge)
+    Text(text = sectionSubheading, style = Typography.labelSmall)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        values.forEachIndexed { index, chipViewState ->
+            FilterChip(
+                selected = chipViewState.isSelected,
+                onClick = { onChange(index) },
+                leadingIcon = {
+                    if (chipViewState.isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Selected"
+                        )
+                    }
+                },
+                label = {
+                    Text(text = chipViewState.display)
+                }
             )
         }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PublisherSection() {
-    Spacer(modifier = Modifier.padding(vertical = 8.dp))
-    Text(text = "Publisher", style = Typography.labelLarge)
-    Text(text = "Choose 1", style = Typography.labelSmall)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(
-            selected = true,
-            onClick = {},
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected"
-                )
-            },
-            label = {
-                Text(text = "Harper Collins")
-            }
-        )
-        FilterChip(
-            selected = false,
-            onClick = {},
-            leadingIcon = null,
-            label = {
-                Text(text = "Scholastic")
-            }
-        )
-        FilterChip(
-            selected = false,
-            onClick = {},
-            leadingIcon = null,
-            label = {
-                Text(text = "Harvard Business Review")
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PublishedYearSection() {
-    Spacer(modifier = Modifier.padding(vertical = 8.dp))
-    Text(text = "Year Published", style = Typography.labelLarge)
-    Text(text = "Choose 1", style = Typography.labelSmall)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(
-            selected = true,
-            onClick = {},
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected"
-                )
-            },
-            label = {
-                Text(text = "1989")
-            }
-        )
-        FilterChip(
-            selected = false,
-            onClick = {},
-            leadingIcon = null,
-            label = {
-                Text(text = "1992")
-            }
-        )
-        FilterChip(
-            selected = false,
-            onClick = {},
-            leadingIcon = null,
-            label = {
-                Text(text = "1994")
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun SubjectsSection() {
-    Spacer(modifier = Modifier.padding(vertical = 8.dp))
-    Text(text = "Subjects", style = Typography.labelLarge)
-    Text(text = "Choose Multiple", style = Typography.labelSmall)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(
-            selected = true,
-            onClick = {},
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected"
-                )
-            },
-            label = {
-                Text(text = "American Science fiction")
-            }
-        )
-        FilterChip(
-            selected = true,
-            onClick = {},
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected"
-                )
-            },
-            label = {
-                Text(text = "Fiction")
-            }
-        )
-        FilterChip(
-            selected = true,
-            onClick = {},
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected"
-                )
-            },
-            label = {
-                Text(text = "Cyberspace")
-            }
-        )
-        FilterChip(
-            selected = true,
-            onClick = {},
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected"
-                )
-            },
-            label = {
-                Text(text = "American literature")
-            }
-        )
     }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun BookInputScreenPreview() {
-    BookInputScreen()
+    BookInputScreen(
+        viewState = BookInputViewState(
+            titleLabel = "Title",
+            titleValue = TextFieldValue(""),
+            onTitleChanged = {},
+            authorLabel = "Author",
+            authors = persistentListOf(TextFieldValue("")),
+            onAuthorFieldChanged = { _, _ -> },
+            onRemoveAuthor = { _ -> },
+            onAddAuthor = {},
+            languagesHeading = "Languages",
+            languagesSubheading = "Choose Multiple",
+            languages = persistentListOf(ChipViewState(isSelected = true, display = "English")),
+            onLanguageValueChange = { _ -> },
+            publisherHeading = "Publisher",
+            publisherSubheading = "Choose 1",
+            publishers = persistentListOf(
+                ChipViewState(isSelected = true, display = "Harper Collins"),
+                ChipViewState(isSelected = false, display = "Voyager")
+            ),
+            onPublisherValueChange = { _ -> },
+            subjectsHeading = "Subjects",
+            subjectsSubheading = "Choose Multiple",
+            subjects = persistentListOf(
+                ChipViewState(isSelected = true, display = "Sci Fi"),
+                ChipViewState(isSelected = true, display = "American Literature")
+            ),
+            onSubjectValueChange = { _ -> }
+        )
+    )
 }
