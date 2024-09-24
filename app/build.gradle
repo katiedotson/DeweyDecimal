@@ -7,6 +7,7 @@ plugins {
     id 'com.google.dagger.hilt.android'
     id "io.gitlab.arturbosch.detekt" version "1.23.3"
     id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.20'
+    id 'com.google.gms.google-services'
 }
 
 kapt {
@@ -97,6 +98,12 @@ dependencies {
 
     // kotlin
     implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.8"
+
+    // firebase
+    implementation platform('com.google.firebase:firebase-bom:33.3.0')
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
 // test
     testImplementation 'junit:junit:4.13.2'
