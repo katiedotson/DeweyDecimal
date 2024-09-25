@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import xyz.katiedotson.dewy.ui.theme.Typography
+import xyz.katiedotson.dewy.ui.theme.AppTypography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,13 +86,13 @@ private fun BottomSheetContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (bottomSheetState is BottomSheetState.MatchNotFound) {
-            Text(bottomSheetState.heading, style = Typography.headlineMedium)
+            Text(bottomSheetState.heading, style = AppTypography.headlineMedium)
         }
         if (bottomSheetState is BottomSheetState.MatchFound) {
-            Text(text = bottomSheetState.heading, style = Typography.headlineMedium)
+            Text(text = bottomSheetState.heading, style = AppTypography.headlineMedium)
             HorizontalDivider()
-            Text(text = bottomSheetState.title, style = Typography.bodyLarge)
-            Text(text = bottomSheetState.author, style = Typography.bodyMedium)
+            Text(text = bottomSheetState.title, style = AppTypography.bodyLarge)
+            Text(text = bottomSheetState.author, style = AppTypography.bodyMedium)
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)

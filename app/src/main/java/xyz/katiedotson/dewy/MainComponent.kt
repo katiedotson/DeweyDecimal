@@ -26,7 +26,9 @@ import xyz.katiedotson.dewy.bookinput.bookInputScreen
 import xyz.katiedotson.dewy.bookinput.navigateToBookInputScreen
 import xyz.katiedotson.dewy.camerascan.cameraScanScreen
 import xyz.katiedotson.dewy.camerascan.navigateToCameraScanScreen
-import xyz.katiedotson.dewy.search.SearchRoute
+import xyz.katiedotson.dewy.onboarding.OnboardingRoute
+import xyz.katiedotson.dewy.onboarding.onboardingScreen
+import xyz.katiedotson.dewy.search.navigateToSearchScreen
 import xyz.katiedotson.dewy.search.searchScreen
 import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 
@@ -65,8 +67,11 @@ fun MainComponent() {
         Column(modifier = Modifier.padding(it)) {
             NavHost(
                 navController = navController,
-                startDestination = SearchRoute
+                startDestination = OnboardingRoute
             ) {
+                onboardingScreen(
+                    onNavigateToSearchScreen = navController::navigateToSearchScreen
+                )
                 searchScreen(
                     onNavigateToCameraScan = navController::navigateToCameraScanScreen
                 )

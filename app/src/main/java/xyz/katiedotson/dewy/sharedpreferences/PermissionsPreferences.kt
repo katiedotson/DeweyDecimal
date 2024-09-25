@@ -18,7 +18,7 @@ class PermissionsPreferencesImpl @Inject constructor(
 
     private val cameraPermissionsRequestedKey = "cameraPermissionsRequested"
     private val sharedPreferences = context.getSharedPreferences(
-        "xyz.katiedotson.deweydecimal.PermissionsPreferences",
+        "xyz.katiedotson.dewy.PermissionsPreferences",
         Context.MODE_PRIVATE
     )
 

@@ -28,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import xyz.katiedotson.dewy.ui.theme.Typography
+import xyz.katiedotson.dewy.ui.theme.AppTypography
 
 @Composable
 internal fun BookInputScreen(
@@ -131,7 +131,7 @@ private fun AuthorSection(
         )
         Text(
             text = "Add another author",
-            style = Typography.labelSmall
+            style = AppTypography.labelSmall
         )
         IconButton(
             onClick = onAddAuthor
@@ -153,8 +153,8 @@ private fun ChipsSection(
     onChange: (Int) -> Unit
 ) {
     Spacer(modifier = Modifier.padding(vertical = 8.dp))
-    Text(text = sectionHeading, style = Typography.labelLarge)
-    Text(text = sectionSubheading, style = Typography.labelSmall)
+    Text(text = sectionHeading, style = AppTypography.labelLarge)
+    Text(text = sectionSubheading, style = AppTypography.labelSmall)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         values.forEachIndexed { index, chipViewState ->
             FilterChip(

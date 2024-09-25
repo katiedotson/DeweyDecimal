@@ -15,11 +15,11 @@ kapt {
 }
 
 android {
-    namespace 'xyz.katiedotson.deweydecimal'
+    namespace 'xyz.katiedotson.dewy'
     compileSdk 34
 
     defaultConfig {
-        applicationId "xyz.katiedotson.deweydecimal"
+        applicationId "xyz.katiedotson.dewy"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -77,6 +77,9 @@ dependencies {
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose'
     implementation 'androidx.navigation:navigation-compose:2.8.1'
+
+    // fonts
+    implementation "androidx.compose.ui:ui-text-google-fonts:1.7.2"
 
     // camera
     implementation 'androidx.camera:camera-view:1.3.4'
