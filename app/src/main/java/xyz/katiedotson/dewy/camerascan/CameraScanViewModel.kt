@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.katiedotson.dewy.book.BookModel
 import xyz.katiedotson.dewy.book.BookRepository
+import xyz.katiedotson.dewy.book.key
 import javax.inject.Inject
 
 @HiltViewModel
@@ -81,10 +82,18 @@ internal class CameraScanViewModel @Inject constructor(
     }
 
     fun onBookResultConfirmed() {
-        _events.update { current ->
-            current + Event.BookResultConfirmed(
-                bookId = "TODO"
-            )
+        viewModelScope.launch {
+            bookRepository.saveBookResult(_match!!)
+                .onSuccess {
+                    _events.update { current ->
+                        current + Event.BookResultConfirmed(
+                            bookId = it.key
+                        )
+                    }
+                }
+                .onFailure {
+                    println("something went wrong with firebase")
+                }
         }
     }
 

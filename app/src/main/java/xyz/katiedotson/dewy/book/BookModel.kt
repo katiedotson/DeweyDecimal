@@ -12,6 +12,9 @@ data class BookModel(
     val ddcSort: String,
 )
 
+val BookModel.key: String
+    get() = this.openLibraryKey.replace(oldValue = "/works", newValue = "")
+
 data class AuthorModel(
     val fullName: String,
 )
