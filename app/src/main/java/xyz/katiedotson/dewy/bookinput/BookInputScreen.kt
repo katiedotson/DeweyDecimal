@@ -1,6 +1,5 @@
 package xyz.katiedotson.dewy.bookinput
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -16,10 +15,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +28,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -42,7 +40,7 @@ import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 @Composable
 internal fun BookInputScreen(
     viewState: BookInputViewState,
-    onBackClicked : () -> Unit
+    onBackClicked: () -> Unit
 ) {
     Surface {
         Column(
@@ -221,46 +219,9 @@ private fun ChipsSection(
 }
 
 @Composable
-@Preview(showBackground = true)
-private fun BookInputScreenPreviewLight() {
-    DeweyDecimalTheme {
-        BookInputScreen(
-            onBackClicked = {},
-            viewState = BookInputViewState(
-                titleLabel = "Title",
-                titleValue = TextFieldValue(""),
-                onTitleChanged = {},
-                authorLabel = "Author",
-                authors = persistentListOf(TextFieldValue("")),
-                onAuthorFieldChanged = { _, _ -> },
-                onRemoveAuthor = { _ -> },
-                onAddAuthor = {},
-                languagesHeading = "Languages",
-                languagesSubheading = "Choose Multiple",
-                languages = persistentListOf(ChipViewState(isSelected = true, display = "English")),
-                onLanguageValueChange = { _ -> },
-                publisherHeading = "Publisher",
-                publisherSubheading = "Choose 1",
-                publishers = persistentListOf(
-                    ChipViewState(isSelected = true, display = "Harper Collins"),
-                    ChipViewState(isSelected = false, display = "Voyager")
-                ),
-                onPublisherValueChange = { _ -> },
-                subjectsHeading = "Subjects",
-                subjectsSubheading = "Choose Multiple",
-                subjects = persistentListOf(
-                    ChipViewState(isSelected = true, display = "Sci Fi"),
-                    ChipViewState(isSelected = true, display = "American Literature")
-                ),
-                onSubjectValueChange = { _ -> }
-            )
-        )
-    }
-}
-
-@Composable
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun BookInputScreenPreviewDark() {
+@PreviewLightDark
+@PreviewScreenSizes
+private fun BookInputScreenPreview() {
     DeweyDecimalTheme {
         BookInputScreen(
             onBackClicked = {},

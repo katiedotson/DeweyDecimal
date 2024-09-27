@@ -1,23 +1,29 @@
 package xyz.katiedotson.dewy.search
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
-fun NavController.navigateToSearchScreen(navOptions: NavOptionsBuilder.() -> Unit = {}) {
+fun NavController.navigateToSearchScreen() {
     navigate(route = SearchRoute) {
-        navOptions()
+        this@navigateToSearchScreen.currentBackStackEntry?.destination?.route?.let {
+            popUpTo(it) {
+                inclusive = true
+            }
+        }
     }
 }
 
 fun NavGraphBuilder.searchScreen(
-    onNavigateToCameraScan: () -> Unit
+    onNavigateToCameraScan: () -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     composable<SearchRoute> {
         SearchScreen(
-            onNavigateToCameraScan
+            onNavigateToCameraScanScreen = onNavigateToCameraScan,
+            snackbarHostState = snackbarHostState
         )
     }
 }

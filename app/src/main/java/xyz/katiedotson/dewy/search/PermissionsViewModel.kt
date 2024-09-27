@@ -1,4 +1,4 @@
-package xyz.katiedotson.dewy
+package xyz.katiedotson.dewy.search
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

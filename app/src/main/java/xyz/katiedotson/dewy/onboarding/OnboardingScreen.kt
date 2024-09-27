@@ -1,6 +1,5 @@
 package xyz.katiedotson.dewy.onboarding
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import xyz.katiedotson.dewy.R
 import xyz.katiedotson.dewy.component.DewyTextField
@@ -147,19 +147,9 @@ internal fun OnboardingScreen(
 }
 
 @Composable
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-private fun OnboardingScreenPreviewLightMode() {
-    DeweyDecimalTheme {
-        OnboardingScreen(
-            onSignInClicked = { _, _ -> },
-            onCreateAccountClicked = { _, _ -> },
-        )
-    }
-}
-
-@Composable
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun OnboardingScreenPreviewDarkMode() {
+@PreviewLightDark
+@PreviewScreenSizes
+private fun OnboardingScreenPreview() {
     DeweyDecimalTheme {
         OnboardingScreen(
             onSignInClicked = { _, _ -> },

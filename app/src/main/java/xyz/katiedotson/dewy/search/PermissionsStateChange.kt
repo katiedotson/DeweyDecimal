@@ -1,4 +1,4 @@
-package xyz.katiedotson.dewy
+package xyz.katiedotson.dewy.search
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -54,9 +54,4 @@ internal suspend fun handleRationaleStateChange(
             // nothing
         }
     }
-}
-
-interface PermissionsNavActions {
-    fun goToSettings()
-    fun goToScanScreen()
 }

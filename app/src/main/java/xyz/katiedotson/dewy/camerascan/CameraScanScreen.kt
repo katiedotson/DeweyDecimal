@@ -1,6 +1,5 @@
 package xyz.katiedotson.dewy.camerascan
 
-import android.content.res.Configuration
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import androidx.camera.view.PreviewView
@@ -24,7 +23,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.CoroutineScope
@@ -81,47 +80,45 @@ private fun BottomSheetContent(
     onBottomSheetDismissed: () -> Unit,
     onMatchConfirmed: () -> Unit
 ) {
-    Surface {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 12.dp)
-                .padding(bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 12.dp)
+            .padding(bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (bottomSheetState is BottomSheetState.MatchNotFound) {
+            Text(bottomSheetState.heading, style = AppTypography.headlineMedium)
+        }
+        if (bottomSheetState is BottomSheetState.MatchFound) {
+            Text(text = bottomSheetState.heading, style = AppTypography.headlineMedium)
+            HorizontalDivider()
+            Text(text = bottomSheetState.title, style = AppTypography.bodyLarge)
+            Text(text = bottomSheetState.author, style = AppTypography.bodyMedium)
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (bottomSheetState is BottomSheetState.MatchNotFound) {
-                Text(bottomSheetState.heading, style = AppTypography.headlineMedium)
-            }
-            if (bottomSheetState is BottomSheetState.MatchFound) {
-                Text(text = bottomSheetState.heading, style = AppTypography.headlineMedium)
-                HorizontalDivider()
-                Text(text = bottomSheetState.title, style = AppTypography.bodyLarge)
-                Text(text = bottomSheetState.author, style = AppTypography.bodyMedium)
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Spacer(
-                    modifier = Modifier.weight(1f)
-                )
-                OutlinedButton(
-                    onClick = {
-                        scope
-                            .launch { sheetState.hide() }
-                            .invokeOnCompletion {
-                                if (sheetState.isVisible.not()) {
-                                    onBottomSheetDismissed()
-                                }
+            Spacer(
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedButton(
+                onClick = {
+                    scope
+                        .launch { sheetState.hide() }
+                        .invokeOnCompletion {
+                            if (sheetState.isVisible.not()) {
+                                onBottomSheetDismissed()
                             }
-                    }
-                ) {
-                    Text(text = "Try Again", style = AppTypography.labelLarge)
+                        }
                 }
-                Button(
-                    onClick = onMatchConfirmed
-                ) {
-                    Text(text = "Confirm", style = AppTypography.labelLarge)
-                }
+            ) {
+                Text(text = "Try Again", style = AppTypography.labelLarge)
+            }
+            Button(
+                onClick = onMatchConfirmed
+            ) {
+                Text(text = "Confirm", style = AppTypography.labelLarge)
             }
         }
     }
@@ -129,38 +126,21 @@ private fun BottomSheetContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
+@PreviewLightDark
 private fun BottomSheetContentMatchFoundPreview() {
     DeweyDecimalTheme {
-        BottomSheetContent(
-            bottomSheetState = BottomSheetState.MatchFound(
-                heading = "Result Found",
-                title = "Burning Chrome",
-                author = "William Gibson"
-            ),
-            onBottomSheetDismissed = {},
-            onMatchConfirmed = {},
-            scope = rememberCoroutineScope(),
-            sheetState = rememberModalBottomSheetState()
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun BottomSheetContentMatchFoundPreviewDark() {
-    DeweyDecimalTheme {
-        BottomSheetContent(
-            bottomSheetState = BottomSheetState.MatchFound(
-                heading = "Result Found",
-                title = "Burning Chrome",
-                author = "William Gibson"
-            ),
-            onBottomSheetDismissed = {},
-            onMatchConfirmed = {},
-            scope = rememberCoroutineScope(),
-            sheetState = rememberModalBottomSheetState()
-        )
+        Surface {
+            BottomSheetContent(
+                bottomSheetState = BottomSheetState.MatchFound(
+                    heading = "Result Found",
+                    title = "Burning Chrome",
+                    author = "William Gibson"
+                ),
+                onBottomSheetDismissed = {},
+                onMatchConfirmed = {},
+                scope = rememberCoroutineScope(),
+                sheetState = rememberModalBottomSheetState()
+            )
+        }
     }
 }

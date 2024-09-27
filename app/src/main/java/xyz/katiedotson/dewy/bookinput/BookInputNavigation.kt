@@ -13,7 +13,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.serialization.Serializable
 
-fun NavGraphBuilder.bookInputScreen() {
+fun NavGraphBuilder.bookInputScreen(onNavigateBack: () -> Unit) {
     composable<BookInputRoute> {
         val viewModel: BookInputViewModel = hiltViewModel()
         val vmState by viewModel.state.collectAsStateWithLifecycle()
@@ -28,7 +28,8 @@ fun NavGraphBuilder.bookInputScreen() {
             onSubjectValueChange = viewModel::onSubjectChipStateChange
         )
         BookInputScreen(
-            viewState
+            viewState = viewState,
+            onBackClicked = onNavigateBack
         )
     }
 }

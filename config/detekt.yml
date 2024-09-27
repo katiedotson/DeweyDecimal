@@ -175,7 +175,7 @@ complexity:
     ignoreDeprecated: false
     ignorePrivate: false
     ignoreOverridden: false
-    ignoreAnnotatedFunctions: ['Preview']
+    ignoreAnnotatedFunctions: ['Preview', 'PreviewLightDark', 'PreviewScreenSizes', 'PreviewFontScale', 'PreviewDynamicColors']
 
 coroutines:
   active: true
@@ -743,6 +743,10 @@ style:
     allowedNames: ''
     ignoreAnnotated:
       - 'Preview'
+      - 'PreviewLightDark'
+      - 'PreviewScreenSizes'
+      - 'PreviewFontScale'
+      - 'PreviewDynamicColors'
   UnusedPrivateProperty:
     active: true
     allowedNames: '_|ignored|expected|serialVersionUID'
