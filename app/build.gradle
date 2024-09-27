@@ -102,13 +102,19 @@ dependencies {
     // kotlin
     implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.8"
 
+    // room
+    def room_version = "2.6.1"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
+
     // firebase
     implementation platform('com.google.firebase:firebase-bom:33.3.0')
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-// test
+    // test
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
