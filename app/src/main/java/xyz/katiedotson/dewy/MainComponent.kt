@@ -10,14 +10,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import xyz.katiedotson.dewy.bookinput.bookInputScreen
-import xyz.katiedotson.dewy.bookinput.navigateToBookInputScreen
-import xyz.katiedotson.dewy.camerascan.cameraScanScreen
-import xyz.katiedotson.dewy.camerascan.navigateToCameraScanScreen
-import xyz.katiedotson.dewy.onboarding.OnboardingRoute
-import xyz.katiedotson.dewy.onboarding.onboardingScreen
-import xyz.katiedotson.dewy.search.navigateToSearchScreen
-import xyz.katiedotson.dewy.search.searchScreen
+import xyz.katiedotson.dewy.app.bookinput.bookInputScreen
+import xyz.katiedotson.dewy.app.bookinput.navigateToBookInputScreen
+import xyz.katiedotson.dewy.app.camerascan.cameraScanScreen
+import xyz.katiedotson.dewy.app.camerascan.navigateToCameraScanScreen
+import xyz.katiedotson.dewy.app.onboarding.OnboardingRoute
+import xyz.katiedotson.dewy.app.onboarding.onboardingScreen
+import xyz.katiedotson.dewy.app.search.navigateToSearchScreen
+import xyz.katiedotson.dewy.app.search.searchScreen
 
 @Composable
 fun MainComponent() {
