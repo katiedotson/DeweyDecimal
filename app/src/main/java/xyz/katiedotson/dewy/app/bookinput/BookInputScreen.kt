@@ -17,16 +17,20 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -51,7 +55,9 @@ internal fun BookInputScreen(
         ) {
             IconButton(
                 onBackClicked,
-                modifier = Modifier.padding(bottom = 24.dp).size(48.dp)
+                modifier = Modifier
+                    .padding(bottom = 24.dp)
+                    .size(48.dp)
             ) {
                 Icon(
                     modifier = Modifier.fillMaxSize(),
@@ -103,6 +109,19 @@ internal fun BookInputScreen(
                 values = viewState.subjects,
                 onChange = viewState.onSubjectValueChange
             )
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.inverseSurface
+                ),
+                modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                onClick = viewState.onSaveClicked,
+            ) {
+                Text(
+                    text = "Save",
+                    style = AppTypography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -251,7 +270,8 @@ private fun BookInputScreenPreview() {
                     ChipViewState(isSelected = true, display = "Sci Fi"),
                     ChipViewState(isSelected = true, display = "American Literature")
                 ),
-                onSubjectValueChange = { _ -> }
+                onSubjectValueChange = { _ -> },
+                onSaveClicked = {},
             )
         )
     }

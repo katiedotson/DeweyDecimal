@@ -1,5 +1,9 @@
 package xyz.katiedotson.dewy.app.bookinput
 
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarVisuals
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,10 +17,40 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.serialization.Serializable
 
-fun NavGraphBuilder.bookInputScreen(onNavigateBack: () -> Unit) {
+fun NavGraphBuilder.bookInputScreen(
+    onNavigateBack: () -> Unit,
+    onNavigateBackToDashboard: () -> Unit,
+    snackbarHostState: SnackbarHostState
+) {
     composable<BookInputRoute> {
         val viewModel: BookInputViewModel = hiltViewModel()
         val vmState by viewModel.state.collectAsStateWithLifecycle()
+        val events by viewModel.events.collectAsStateWithLifecycle()
+        LaunchedEffect(events) {
+            val last = events.lastOrNull()
+            last?.let {
+                when (it) {
+                    Event.Error -> {
+                        snackbarHostState.showSnackbar(
+                            object : SnackbarVisuals {
+                                override val actionLabel: String?
+                                    get() = null
+                                override val duration: SnackbarDuration
+                                    get() = SnackbarDuration.Long
+                                override val message: String
+                                    get() = "Something went wrong while trying to save your book. Please try again."
+                                override val withDismissAction: Boolean
+                                    get() = true
+                            }
+                        )
+                    }
+                    Event.Success -> {
+                        onNavigateBackToDashboard()
+                    }
+                }
+            }
+        }
+
         val viewState = mapToViewState(
             vmState = vmState,
             onTitleChanged = viewModel::onTitleValueChange,
@@ -25,7 +59,8 @@ fun NavGraphBuilder.bookInputScreen(onNavigateBack: () -> Unit) {
             onAddAuthor = viewModel::onAddAuthor,
             onLanguageValueChange = viewModel::onLanguageChipStateChange,
             onPublisherValueChange = viewModel::onPublishersChipStateChange,
-            onSubjectValueChange = viewModel::onSubjectChipStateChange
+            onSubjectValueChange = viewModel::onSubjectChipStateChange,
+            onSaveClicked = viewModel::onSave
         )
         BookInputScreen(
             viewState = viewState,
@@ -42,7 +77,8 @@ fun mapToViewState(
     onAddAuthor: () -> Unit,
     onLanguageValueChange: (Int) -> Unit,
     onPublisherValueChange: (Int) -> Unit,
-    onSubjectValueChange: (Int) -> Unit
+    onSubjectValueChange: (Int) -> Unit,
+    onSaveClicked: () -> Unit
 ): BookInputViewState {
     return BookInputViewState(
         titleLabel = "Title",
@@ -79,7 +115,8 @@ fun mapToViewState(
                 display = chipState.display
             )
         }.toImmutableList(),
-        onSubjectValueChange = onSubjectValueChange
+        onSubjectValueChange = onSubjectValueChange,
+        onSaveClicked = onSaveClicked,
     )
 }
 
@@ -108,7 +145,9 @@ data class BookInputViewState(
     val subjectsHeading: String,
     val subjectsSubheading: String,
     val subjects: ImmutableList<ChipViewState>,
-    val onSubjectValueChange: (Int) -> Unit
+    val onSubjectValueChange: (Int) -> Unit,
+    // save button
+    val onSaveClicked: () -> Unit
 )
 
 data class ChipViewState(
@@ -124,4 +163,3 @@ fun NavController.navigateToBookInputScreen(bookId: String, navOptions: NavOptio
 
 @Serializable
 data class BookInputRoute(val bookId: String)
-

@@ -9,59 +9,61 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.katiedotson.dewy.service.auth.AuthService
+import xyz.katiedotson.dewy.service.auth.DewyUser
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(private val authService: AuthService) : ViewModel() {
+class AuthViewModel @Inject constructor(
+    getUser: GetUserUseCase,
+    private val signInUseCase: SignInUseCase,
+    private val createAccountUseCase: CreateAccountUseCase
+) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unknown)
     val authState = _authState.asStateFlow()
 
     init {
-        authService.loadUser().onSuccess {
-            _authState.update {
-                AuthState.Authenticated
+        getUser()
+            .onSuccess {
+                _authState.update {
+                    AuthState.Authenticated
+                }
+            }.onFailure {
+                _authState.update {
+                    AuthState.Unauthenticated
+                }
             }
-        }.onFailure {
-            _authState.update {
-                AuthState.Unauthenticated
-            }
-        }
     }
 
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
-            authService.signIn(
-                email = email,
-                password = password
-            ).onSuccess { _ ->
-                _authState.update {
-                    AuthState.Authenticated
+            signInUseCase(email, password)
+                .onSuccess { _ ->
+                    _authState.update {
+                        AuthState.Authenticated
+                    }
+                }.onFailure { failure ->
+                    Log.e("AuthViewModel", "sign in failed", failure)
+                    _authState.update {
+                        AuthState.Error
+                    }
                 }
-            }.onFailure { failure ->
-                Log.e("AuthViewModel", "sign in failed", failure)
-                _authState.update {
-                    AuthState.Error
-                }
-            }
         }
     }
 
     fun createAccount(email: String, password: String) {
         viewModelScope.launch {
-            authService.createAccount(
-                email = email,
-                password = password
-            ).onSuccess { _ ->
-                _authState.update {
-                    AuthState.Authenticated
+            createAccountUseCase(email, password)
+                .onSuccess { _ ->
+                    _authState.update {
+                        AuthState.Authenticated
+                    }
+                }.onFailure { failure ->
+                    Log.e("AuthViewModel", "create account failed", failure)
+                    _authState.update {
+                        AuthState.Error
+                    }
                 }
-            }.onFailure { failure ->
-                Log.e("AuthViewModel", "create account failed", failure)
-                _authState.update {
-                    AuthState.Error
-                }
-            }
         }
     }
 
@@ -70,5 +72,35 @@ class AuthViewModel @Inject constructor(private val authService: AuthService) : 
         data object Authenticated : AuthState()
         data object Unauthenticated : AuthState()
         data object Error : AuthState()
+    }
+}
+
+class GetUserUseCase @Inject constructor(private val authService: AuthService) {
+    operator fun invoke(): Result<DewyUser> {
+        return authService.loadUser()
+    }
+}
+
+class SignInUseCase @Inject constructor(private val authService: AuthService) {
+    suspend operator fun invoke(
+        email: String,
+        password: String,
+    ): Result<DewyUser> {
+        return authService.signIn(
+            email = email,
+            password = password
+        )
+    }
+}
+
+class CreateAccountUseCase @Inject constructor(private val authService: AuthService) {
+    suspend operator fun invoke(
+        email: String,
+        password: String
+    ): Result<DewyUser> {
+        return authService.createAccount(
+            email = email,
+            password = password
+        )
     }
 }

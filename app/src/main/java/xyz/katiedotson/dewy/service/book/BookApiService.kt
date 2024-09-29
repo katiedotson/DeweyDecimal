@@ -13,7 +13,7 @@ import retrofit2.http.Query
 
 interface BookApiService {
     @GET("search.json")
-    suspend fun getByIsbn(@Query("isbn") isbn: String): BookResult?
+    suspend fun getByIsbn(@Query("isbn") isbn: String): BookResponse?
 }
 
 @Module

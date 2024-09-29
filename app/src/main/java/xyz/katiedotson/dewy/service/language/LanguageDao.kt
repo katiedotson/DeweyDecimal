@@ -7,4 +7,7 @@ import androidx.room.Query
 interface LanguageDao {
     @Query("SELECT * FROM language")
     fun getAll(): List<DatabaseLanguageModel>
+
+    @Query("SELECT * FROM language WHERE `key` IN (:keys)")
+    fun getByKeys(keys: List<String>): List<DatabaseLanguageModel>
 }

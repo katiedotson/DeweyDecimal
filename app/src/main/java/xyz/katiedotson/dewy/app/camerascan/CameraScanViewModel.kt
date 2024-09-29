@@ -8,16 +8,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xyz.katiedotson.dewy.model.BookModel
-import xyz.katiedotson.dewy.service.book.BookRepository
+import xyz.katiedotson.dewy.model.BookSearchResult
 import xyz.katiedotson.dewy.model.key
+import xyz.katiedotson.dewy.service.book.BookRepository
 import javax.inject.Inject
 
 @HiltViewModel
 internal class CameraScanViewModel @Inject constructor(
     private val bookRepository: BookRepository
 ) : ViewModel() {
-    private var _match: BookModel? = null
+    private var _match: BookSearchResult? = null
     private val _isbn = MutableStateFlow<String?>(value = null)
 
     private val _state = MutableStateFlow<CameraScanState>(CameraScanState.Scanning)
@@ -34,7 +34,8 @@ internal class CameraScanViewModel @Inject constructor(
                     _state.update {
                         CameraScanState.Loading
                     }
-                    val result: Result<BookModel> = bookRepository.getByIsbn(isbn)
+                    println("Sending ISBN: $isbn")
+                    val result: Result<BookSearchResult> = bookRepository.getByIsbn(isbn)
                     result
                         .onSuccess { value ->
                             _match = value
@@ -57,8 +58,7 @@ internal class CameraScanViewModel @Inject constructor(
         if (_state.value != CameraScanState.Scanning) return
         text.blocks
             .firstOrNull { string ->
-                string.startsWith(prefix = "ISBN") &&
-                    (string.filterIsbn().length == 13 || string.filterIsbn().length == 10)
+                (string.filterIsbn().length == 13 || string.filterIsbn().length == 10)
             }
             ?.let { string ->
                 _isbn
@@ -107,7 +107,7 @@ internal class CameraScanViewModel @Inject constructor(
 internal sealed class CameraScanState {
     data object Scanning : CameraScanState()
     data object Loading : CameraScanState()
-    data class MatchFound(val match: BookModel) : CameraScanState()
+    data class MatchFound(val match: BookSearchResult) : CameraScanState()
     data object MatchNotFound : CameraScanState()
 }
 

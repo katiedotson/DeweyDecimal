@@ -14,7 +14,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 
 data class DewyUser(
-    val email: String
+    val email: String,
+    val userId: String,
 )
 
 interface AuthService {
@@ -36,8 +37,14 @@ class AuthServiceImpl @Inject constructor(
 
     override fun loadUser(): Result<DewyUser> {
         val currentUserEmail = Firebase.auth.currentUser?.email
-        return if (currentUserEmail != null) {
-            Result.success(DewyUser(currentUserEmail))
+        val currentUserId = Firebase.auth.currentUser?.uid
+        return if (currentUserEmail != null && currentUserId != null) {
+            Result.success(
+                DewyUser(
+                    email = currentUserEmail,
+                    userId = currentUserId
+                )
+            )
         } else {
             Firebase.auth.signOut()
             Result.failure(Throwable("User was unauthenticated"))
@@ -47,8 +54,17 @@ class AuthServiceImpl @Inject constructor(
     override suspend fun signIn(email: String, password: String): Result<DewyUser> = withContext(dispatcher) {
         return@withContext suspendCancellableCoroutine { continuation ->
             Firebase.auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener { _ ->
-                    continuation.resume(Result.success(DewyUser(email)))
+                .addOnSuccessListener { authResult ->
+                    authResult.user?.uid?.let { userId ->
+                        continuation.resume(
+                            Result.success(
+                                DewyUser(
+                                    email = email,
+                                    userId = userId
+                                )
+                            )
+                        )
+                    } ?: continuation.resume(Result.failure(Throwable("No User Id")))
                 }.addOnFailureListener { e ->
                     continuation.resume(Result.failure(e))
                 }.addOnCanceledListener {
@@ -59,13 +75,23 @@ class AuthServiceImpl @Inject constructor(
 
     override suspend fun createAccount(email: String, password: String): Result<DewyUser> = withContext(dispatcher) {
         return@withContext suspendCancellableCoroutine { continuation ->
-            Firebase.auth.createUserWithEmailAndPassword(email, password).addOnSuccessListener { _ ->
-                continuation.resume(Result.success(DewyUser(email)))
-            }.addOnFailureListener { e ->
-                continuation.resume(Result.failure(e))
-            }.addOnCanceledListener {
-                continuation.cancel(cause = null)
-            }
+            Firebase.auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener { authResult ->
+                    authResult.user?.uid?.let { userId ->
+                        continuation.resume(
+                            Result.success(
+                                DewyUser(
+                                    email = email,
+                                    userId = userId
+                                )
+                            )
+                        )
+                    } ?: continuation.resume(Result.failure(Throwable("No User Id")))
+                }.addOnFailureListener { e ->
+                    continuation.resume(Result.failure(e))
+                }.addOnCanceledListener {
+                    continuation.cancel(cause = null)
+                }
         }
     }
 }

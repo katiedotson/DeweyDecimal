@@ -10,46 +10,46 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xyz.katiedotson.dewy.service.book.BookRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class BookInputViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val bookRepository: BookRepository
+    private val getBookInputModel: GetBookInputModelUseCase,
+    private val saveBookToLibrary: SaveBookToLibraryUseCase
 ) : ViewModel() {
 
-    private val bookId = savedStateHandle.toRoute<BookInputRoute>().bookId
+    private val key = savedStateHandle.toRoute<BookInputRoute>().bookId
 
     init {
         viewModelScope.launch {
-            bookRepository.getByKey(
-                bookId
+            getBookInputModel(
+                key
             ).onSuccess { book ->
                 _state.update {
                     BookInputState(
                         titleState = TextFieldValue(book.title),
-                        authors = book.authors.map { authorModel ->
-                            TextFieldValue(authorModel.fullName)
+                        authors = book.authors.map {
+                            TextFieldValue(it)
                         },
-                        languages = book.languages.mapIndexed { index, languageModel ->
+                        languages = book.languages.mapIndexed { index, language ->
                             ChipState(
                                 index = index,
-                                display = languageModel.abbreviation,
+                                display = language,
                                 isSelected = false,
                             )
                         },
-                        publishers = book.publishers.mapIndexed { index, publisherModel ->
+                        publishers = book.publishers.mapIndexed { index, publisherName ->
                             ChipState(
                                 index = index,
-                                display = publisherModel.publisherName,
+                                display = publisherName,
                                 isSelected = false,
                             )
                         },
-                        subjects = book.subjects.mapIndexed { index, subjectModel ->
+                        subjects = book.subjects.mapIndexed { index, subjectName ->
                             ChipState(
                                 index = index,
-                                display = subjectModel.subjectName,
+                                display = subjectName,
                                 isSelected = false,
                             )
                         },
@@ -72,6 +72,9 @@ class BookInputViewModel @Inject constructor(
     )
 
     val state = _state.asStateFlow()
+
+    private val _events = MutableStateFlow<List<Event>>(listOf())
+    val events = _events.asStateFlow()
 
     fun onTitleValueChange(textFieldValue: TextFieldValue) {
         _state.update { current ->
@@ -158,6 +161,46 @@ class BookInputViewModel @Inject constructor(
             )
         }
     }
+
+    fun onSave() {
+        viewModelScope.launch {
+            val bookInputModel = _state.value.toBookInputModel()
+            saveBookToLibrary(bookInputModel)
+                .onSuccess {
+                    _events.update { current ->
+                        current + Event.Success
+                    }
+                }.onFailure {
+                    _events.update { current ->
+                        current + Event.Error
+                    }
+                }
+        }
+    }
+
+    private fun BookInputState.toBookInputModel(): BookInputModel {
+        return BookInputModel(
+            key = key,
+            title = this.titleState.text,
+            authors = this.authors.map {
+                it.text
+            },
+            languages = this.languages.map {
+                it.display
+            },
+            publishers = this.publishers.map {
+                it.display
+            },
+            subjects = this.subjects.map {
+                it.display
+            }
+        )
+    }
+}
+
+sealed class Event {
+    data object Success : Event()
+    data object Error : Event()
 }
 
 data class BookInputState(

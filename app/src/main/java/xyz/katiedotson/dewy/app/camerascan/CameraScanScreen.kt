@@ -115,10 +115,12 @@ private fun BottomSheetContent(
             ) {
                 Text(text = "Try Again", style = AppTypography.labelLarge)
             }
-            Button(
-                onClick = onMatchConfirmed
-            ) {
-                Text(text = "Confirm", style = AppTypography.labelLarge)
+            if (bottomSheetState is BottomSheetState.MatchFound) {
+                Button(
+                    onClick = onMatchConfirmed
+                ) {
+                    Text(text = "Confirm", style = AppTypography.labelLarge)
+                }
             }
         }
     }
