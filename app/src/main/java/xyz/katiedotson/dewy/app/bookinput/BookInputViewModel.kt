@@ -168,7 +168,7 @@ class BookInputViewModel @Inject constructor(
             saveBookToLibrary(bookInputModel)
                 .onSuccess {
                     _events.update { current ->
-                        current + Event.Success
+                        current + Event.Success(bookTitle = bookInputModel.title)
                     }
                 }.onFailure {
                     _events.update { current ->
@@ -199,7 +199,7 @@ class BookInputViewModel @Inject constructor(
 }
 
 sealed class Event {
-    data object Success : Event()
+    data class Success(val bookTitle: String) : Event()
     data object Error : Event()
 }
 

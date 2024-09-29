@@ -20,10 +20,11 @@ fun NavGraphBuilder.searchScreen(
     onNavigateToCameraScan: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
-    composable<SearchRoute> {
+    composable<SearchRoute> { backStackEntry ->
         SearchScreen(
             onNavigateToCameraScanScreen = onNavigateToCameraScan,
-            snackbarHostState = snackbarHostState
+            snackbarHostState = snackbarHostState,
+            savedBookTitle = backStackEntry.savedStateHandle.get<String>("SavedBookTitle")
         )
     }
 }

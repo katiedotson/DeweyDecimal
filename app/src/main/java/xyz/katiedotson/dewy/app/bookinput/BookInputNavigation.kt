@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.bookInputScreen(
     onNavigateBack: () -> Unit,
-    onNavigateBackToDashboard: () -> Unit,
+    onNavigateBackToDashboard: (String) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     composable<BookInputRoute> {
@@ -44,8 +44,9 @@ fun NavGraphBuilder.bookInputScreen(
                             }
                         )
                     }
-                    Event.Success -> {
-                        onNavigateBackToDashboard()
+
+                    is Event.Success -> {
+                        onNavigateBackToDashboard(it.bookTitle)
                     }
                 }
             }

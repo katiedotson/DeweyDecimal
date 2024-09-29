@@ -45,7 +45,15 @@ fun MainComponent() {
                 )
                 bookInputScreen(
                     onNavigateBack = navController::popBackStack,
-                    onNavigateBackToDashboard = { navController.popBackStack(route = SearchRoute, inclusive = false) },
+                    onNavigateBackToDashboard = { savedBookTitle ->
+                        navController
+                            .popBackStack<SearchRoute>(inclusive = false)
+                            .also {
+                                navController.currentBackStackEntry
+                                    ?.savedStateHandle
+                                    ?.set("SavedBookTitle", savedBookTitle)
+                            }
+                    },
                     snackbarHostState = snackbarHostState
                 )
             }

@@ -35,7 +35,8 @@ import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 @Composable
 internal fun SearchScreen(
     onNavigateToCameraScanScreen: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    savedBookTitle: String?
 ) {
     val permissionsViewModel: PermissionsViewModel = hiltViewModel()
     val cameraPermissionState = rememberPermissionState(
@@ -59,6 +60,15 @@ internal fun SearchScreen(
                 startActivity(context, intent, null)
             }
         )
+    }
+
+    LaunchedEffect(savedBookTitle) {
+        if (savedBookTitle != null) {
+            snackbarHostState.showSnackbar(
+                message = "$savedBookTitle was successfully saved to your library.",
+                withDismissAction = true
+            )
+        }
     }
     Surface {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -87,7 +97,8 @@ private fun SearchScreenPreviewDark() {
     DeweyDecimalTheme {
         SearchScreen(
             onNavigateToCameraScanScreen = {},
-            snackbarHostState = SnackbarHostState()
+            snackbarHostState = SnackbarHostState(),
+            savedBookTitle = null
         )
     }
 }
