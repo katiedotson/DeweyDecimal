@@ -16,6 +16,7 @@ fun DewyTextField(
     label: String,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
+    errorText: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     OutlinedTextField(
@@ -26,6 +27,14 @@ fun DewyTextField(
             unfocusedContainerColor = MaterialTheme.colorScheme.background
         ),
         isError = isError,
+        supportingText = {
+            if (errorText != null) {
+                Text(
+                    text = errorText,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        },
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,

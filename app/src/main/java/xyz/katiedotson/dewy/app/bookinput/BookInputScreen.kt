@@ -1,5 +1,7 @@
 package xyz.katiedotson.dewy.app.bookinput
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
@@ -53,27 +56,8 @@ internal fun BookInputScreen(
                 .padding(24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            IconButton(
-                onBackClicked,
-                modifier = Modifier
-                    .padding(bottom = 24.dp)
-                    .size(48.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.fillMaxSize(),
-                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = null
-                )
-            }
-            Text(
-                modifier = Modifier.padding(bottom = 8.dp),
-                text = "We found your book.",
-                style = AppTypography.displaySmall
-            )
-            Text(
-                modifier = Modifier.padding(bottom = 24.dp),
-                text = "Check over the details before saving it to your library.",
-                style = AppTypography.bodyLarge
+            Heading(
+                onBackClicked = onBackClicked
             )
             Text(
                 text = "Title & Author",
@@ -83,6 +67,7 @@ internal fun BookInputScreen(
                 titleLabel = viewState.titleLabel,
                 titleValue = viewState.titleValue,
                 onTitleChanged = viewState.onTitleChanged,
+                titleError = viewState.titleError
             )
             AuthorSection(
                 authorLabel = viewState.authorLabel,
@@ -90,40 +75,62 @@ internal fun BookInputScreen(
                 onAuthorFieldChanged = viewState.onAuthorFieldChanged,
                 onRemoveAuthor = viewState.onRemoveAuthor,
                 onAddAuthor = viewState.onAddAuthor,
+                authorError = viewState.authorError,
             )
             ChipsSection(
                 sectionHeading = viewState.languagesHeading,
                 sectionSubheading = viewState.languagesSubheading,
                 values = viewState.languages,
                 onChange = viewState.onLanguageValueChange,
+                errorMessage = viewState.languageError
             )
             ChipsSection(
                 sectionHeading = viewState.publisherHeading,
                 sectionSubheading = viewState.publisherSubheading,
                 values = viewState.publishers,
                 onChange = viewState.onPublisherValueChange,
+                errorMessage = viewState.publisherError
             )
             ChipsSection(
                 sectionHeading = viewState.subjectsHeading,
                 sectionSubheading = viewState.subjectsSubheading,
                 values = viewState.subjects,
-                onChange = viewState.onSubjectValueChange
+                onChange = viewState.onSubjectValueChange,
+                errorMessage = null
             )
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.inverseSurface
-                ),
-                modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
-                onClick = viewState.onSaveClicked,
-            ) {
-                Text(
-                    text = "Save",
-                    style = AppTypography.bodyLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            SaveButton(
+                viewState.onSaveClicked
+            )
         }
     }
+}
+
+@Composable
+private fun Heading(
+    onBackClicked: () -> Unit
+) {
+    IconButton(
+        onBackClicked,
+        modifier = Modifier
+            .padding(bottom = 24.dp)
+            .size(48.dp)
+    ) {
+        Icon(
+            modifier = Modifier.fillMaxSize(),
+            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+            contentDescription = null
+        )
+    }
+    Text(
+        modifier = Modifier.padding(bottom = 8.dp),
+        text = "We found your book.",
+        style = AppTypography.displaySmall
+    )
+    Text(
+        modifier = Modifier.padding(bottom = 24.dp),
+        text = "Check over the details before saving it to your library.",
+        style = AppTypography.bodyLarge
+    )
 }
 
 @Composable
@@ -131,6 +138,7 @@ private fun TitleSection(
     titleLabel: String,
     titleValue: TextFieldValue,
     onTitleChanged: (TextFieldValue) -> Unit,
+    titleError: String?,
 ) {
     DewyTextField(
         label = titleLabel,
@@ -140,7 +148,9 @@ private fun TitleSection(
         value = titleValue.text,
         onValueChange = {
             onTitleChanged(TextFieldValue(it))
-        }
+        },
+        isError = titleError != null,
+        errorText = titleError,
     )
 }
 
@@ -150,7 +160,8 @@ private fun AuthorSection(
     authors: List<TextFieldValue>,
     onAuthorFieldChanged: (Int, TextFieldValue) -> Unit,
     onRemoveAuthor: (Int) -> Unit,
-    onAddAuthor: () -> Unit
+    onAddAuthor: () -> Unit,
+    authorError: String?
 ) {
     authors.forEachIndexed { index, textFieldValue ->
         Row(
@@ -197,6 +208,9 @@ private fun AuthorSection(
             )
         }
     }
+    InlineErrorMessage(
+        authorError
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -205,7 +219,8 @@ private fun ChipsSection(
     sectionHeading: String,
     sectionSubheading: String,
     values: ImmutableList<ChipViewState>,
-    onChange: (Int) -> Unit
+    onChange: (Int) -> Unit,
+    errorMessage: String?,
 ) {
     Text(
         modifier = Modifier.padding(top = 24.dp),
@@ -235,6 +250,63 @@ private fun ChipsSection(
             )
         }
     }
+    InlineErrorMessage(errorMessage)
+}
+
+@Composable
+private fun InlineErrorMessage(
+    errorMessage: String?
+) {
+    AnimatedVisibility(
+        visible = errorMessage != null
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.extraSmall
+                )
+                .padding(8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                tint = MaterialTheme.colorScheme.onErrorContainer,
+                imageVector = Icons.Filled.Info,
+                contentDescription = null
+            )
+            Spacer(
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+            Text(
+                text = errorMessage ?: "",
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun SaveButton(
+    onSaveClicked: () -> Unit,
+) {
+    Button(
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.inverseSurface
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+        onClick = onSaveClicked,
+    ) {
+        Text(
+            text = "Save",
+            style = AppTypography.bodyLarge,
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 @Composable
@@ -246,17 +318,20 @@ private fun BookInputScreenPreview() {
             onBackClicked = {},
             viewState = BookInputViewState(
                 titleLabel = "Title",
-                titleValue = TextFieldValue(""),
+                titleValue = TextFieldValue(text = "Burning Chrome"),
                 onTitleChanged = {},
+                titleError = "Title field is required",
                 authorLabel = "Author",
-                authors = persistentListOf(TextFieldValue("")),
+                authors = persistentListOf(TextFieldValue(text = "William Gibson")),
                 onAuthorFieldChanged = { _, _ -> },
                 onRemoveAuthor = { _ -> },
                 onAddAuthor = {},
+                authorError = null,
                 languagesHeading = "Languages",
                 languagesSubheading = "Choose Multiple",
                 languages = persistentListOf(ChipViewState(isSelected = true, display = "English")),
                 onLanguageValueChange = { _ -> },
+                languageError = null,
                 publisherHeading = "Publisher",
                 publisherSubheading = "Choose 1",
                 publishers = persistentListOf(
@@ -264,6 +339,7 @@ private fun BookInputScreenPreview() {
                     ChipViewState(isSelected = false, display = "Voyager")
                 ),
                 onPublisherValueChange = { _ -> },
+                publisherError = "At least one publisher must be selected",
                 subjectsHeading = "Subjects",
                 subjectsSubheading = "Choose Multiple",
                 subjects = persistentListOf(

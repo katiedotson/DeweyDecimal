@@ -29,9 +29,11 @@ class BookInputViewModel @Inject constructor(
                 _state.update {
                     BookInputState(
                         titleState = TextFieldValue(book.title),
+                        titleError = false,
                         authors = book.authors.map {
                             TextFieldValue(it)
                         },
+                        authorsError = false,
                         languages = book.languages.mapIndexed { index, language ->
                             ChipState(
                                 index = index,
@@ -39,6 +41,7 @@ class BookInputViewModel @Inject constructor(
                                 isSelected = false,
                             )
                         },
+                        languageError = false,
                         publishers = book.publishers.mapIndexed { index, publisherName ->
                             ChipState(
                                 index = index,
@@ -46,6 +49,7 @@ class BookInputViewModel @Inject constructor(
                                 isSelected = false,
                             )
                         },
+                        publisherError = false,
                         subjects = book.subjects.mapIndexed { index, subjectName ->
                             ChipState(
                                 index = index,
@@ -63,14 +67,17 @@ class BookInputViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(
         BookInputState(
-            titleState = TextFieldValue(text = ""),
+            titleState = TextFieldValue(),
+            titleError = false,
             authors = listOf(),
+            authorsError = false,
             languages = listOf(),
+            languageError = false,
             publishers = listOf(),
+            publisherError = false,
             subjects = listOf(),
         )
     )
-
     val state = _state.asStateFlow()
 
     private val _events = MutableStateFlow<List<Event>>(listOf())
@@ -78,7 +85,10 @@ class BookInputViewModel @Inject constructor(
 
     fun onTitleValueChange(textFieldValue: TextFieldValue) {
         _state.update { current ->
-            current.copy(titleState = textFieldValue)
+            current.copy(
+                titleState = textFieldValue,
+                titleError = textFieldValue.text.isBlank()
+            )
         }
     }
 
@@ -93,7 +103,8 @@ class BookInputViewModel @Inject constructor(
                         } else {
                             field
                         }
-                    }
+                    },
+                authorsError = false,
             )
         }
     }
@@ -110,7 +121,8 @@ class BookInputViewModel @Inject constructor(
         if (_state.value.authors.size == 1) return
         _state.update { current ->
             current.copy(
-                authors = current.authors.filterIndexed { fieldIndex, _ -> index != fieldIndex }
+                authors = current.authors.filterIndexed { fieldIndex, _ -> index != fieldIndex },
+                authorsError = false,
             )
         }
     }
@@ -126,7 +138,8 @@ class BookInputViewModel @Inject constructor(
                         } else {
                             field
                         }
-                    }
+                    },
+                languageError = false,
             )
         }
     }
@@ -141,7 +154,8 @@ class BookInputViewModel @Inject constructor(
                             index == fieldIndex -> field.copy(isSelected = true)
                             else -> field.copy(isSelected = false)
                         }
-                    }
+                    },
+                publisherError = false,
             )
         }
     }
@@ -163,19 +177,41 @@ class BookInputViewModel @Inject constructor(
     }
 
     fun onSave() {
-        viewModelScope.launch {
-            val bookInputModel = _state.value.toBookInputModel()
-            saveBookToLibrary(bookInputModel)
-                .onSuccess {
-                    _events.update { current ->
-                        current + Event.Success(bookTitle = bookInputModel.title)
+        if (validate()) {
+            viewModelScope.launch {
+                val bookInputModel = _state.value.toBookInputModel()
+                saveBookToLibrary(bookInputModel)
+                    .onSuccess {
+                        _events.update { current ->
+                            current + Event.Success(bookTitle = bookInputModel.title)
+                        }
+                    }.onFailure {
+                        _events.update { current ->
+                            current + Event.Error
+                        }
                     }
-                }.onFailure {
-                    _events.update { current ->
-                        current + Event.Error
-                    }
-                }
+            }
         }
+    }
+
+    @Suppress("ComplexCondition")
+    private fun validate(): Boolean {
+        val currentState = _state.value
+        val titleIsValid = currentState.titleState.text.isNotBlank()
+        val authorIsValid = currentState.authors.all { it.text.isNotBlank() }
+        val publisherIsValid = currentState.publishers.any { it.isSelected }
+        val languageIsValid = currentState.languages.any { it.isSelected }
+        if (titleIsValid.not() || authorIsValid.not() || publisherIsValid.not() || languageIsValid.not()) {
+            _state.update { current ->
+                current.copy(
+                    titleError = titleIsValid.not(),
+                    authorsError = authorIsValid.not(),
+                    publisherError = publisherIsValid.not(),
+                    languageError = languageIsValid.not(),
+                )
+            }
+        }
+        return titleIsValid && authorIsValid && publisherIsValid && languageIsValid
     }
 
     private fun BookInputState.toBookInputModel(): BookInputModel {
@@ -205,9 +241,13 @@ sealed class Event {
 
 data class BookInputState(
     val titleState: TextFieldValue,
+    val titleError: Boolean,
     val authors: List<TextFieldValue>,
+    val authorsError: Boolean,
     val languages: List<ChipState>,
+    val languageError: Boolean,
     val publishers: List<ChipState>,
+    val publisherError: Boolean,
     val subjects: List<ChipState>
 )
 

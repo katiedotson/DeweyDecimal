@@ -2,7 +2,6 @@ package xyz.katiedotson.dewy.app.bookinput
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.input.TextFieldValue
@@ -32,16 +31,9 @@ fun NavGraphBuilder.bookInputScreen(
                 when (it) {
                     Event.Error -> {
                         snackbarHostState.showSnackbar(
-                            object : SnackbarVisuals {
-                                override val actionLabel: String?
-                                    get() = null
-                                override val duration: SnackbarDuration
-                                    get() = SnackbarDuration.Long
-                                override val message: String
-                                    get() = "Something went wrong while trying to save your book. Please try again."
-                                override val withDismissAction: Boolean
-                                    get() = true
-                            }
+                            message = "Something went wrong while trying to save your book. Please try again.",
+                            withDismissAction = true,
+                            duration = SnackbarDuration.Long,
                         )
                     }
 
@@ -85,11 +77,13 @@ fun mapToViewState(
         titleLabel = "Title",
         titleValue = vmState.titleState,
         onTitleChanged = onTitleChanged,
+        titleError = if (vmState.titleError) "A title is required" else null,
         authorLabel = "Author",
         authors = vmState.authors.toPersistentList(),
         onAuthorFieldChanged = onAuthorsFieldValueChange,
         onRemoveAuthor = onRemoveAuthor,
         onAddAuthor = onAddAuthor,
+        authorError = if (vmState.authorsError) "At least one author is required" else null,
         languagesHeading = "Language(s)",
         languagesSubheading = "Choose Multiple",
         languages = vmState.languages.map { chipState ->
@@ -99,6 +93,7 @@ fun mapToViewState(
             )
         }.toImmutableList(),
         onLanguageValueChange = onLanguageValueChange,
+        languageError = if (vmState.languageError) "At least one language is required" else null,
         publisherHeading = "Publisher",
         publisherSubheading = "Choose 1",
         publishers = vmState.publishers.map { chipState ->
@@ -108,6 +103,7 @@ fun mapToViewState(
             )
         }.toImmutableList(),
         onPublisherValueChange = onPublisherValueChange,
+        publisherError = if (vmState.publisherError) "At least one publisher is required" else null,
         subjectsHeading = "Subject(s)",
         subjectsSubheading = "Choose Multiple",
         subjects = vmState.subjects.map { chipState ->
@@ -126,22 +122,26 @@ data class BookInputViewState(
     val titleLabel: String,
     val titleValue: TextFieldValue,
     val onTitleChanged: (TextFieldValue) -> Unit,
+    val titleError: String?,
     // authors
     val authorLabel: String,
     val authors: ImmutableList<TextFieldValue>,
     val onAuthorFieldChanged: (Int, TextFieldValue) -> Unit,
     val onRemoveAuthor: (Int) -> Unit,
     val onAddAuthor: () -> Unit,
+    val authorError: String?,
     // languages
     val languagesHeading: String,
     val languagesSubheading: String,
     val languages: ImmutableList<ChipViewState>,
     val onLanguageValueChange: (Int) -> Unit,
+    val languageError: String?,
     // publisher
     val publisherHeading: String,
     val publisherSubheading: String,
     val publishers: ImmutableList<ChipViewState>,
     val onPublisherValueChange: (Int) -> Unit,
+    val publisherError: String?,
     // subjects
     val subjectsHeading: String,
     val subjectsSubheading: String,
