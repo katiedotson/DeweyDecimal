@@ -8,8 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import xyz.katiedotson.dewy.service.auth.AuthService
-import xyz.katiedotson.dewy.service.auth.DewyUser
 import javax.inject.Inject
 
 @HiltViewModel
@@ -72,35 +70,5 @@ class AuthViewModel @Inject constructor(
         data object Authenticated : AuthState()
         data object Unauthenticated : AuthState()
         data object Error : AuthState()
-    }
-}
-
-class GetUserUseCase @Inject constructor(private val authService: AuthService) {
-    operator fun invoke(): Result<DewyUser> {
-        return authService.loadUser()
-    }
-}
-
-class SignInUseCase @Inject constructor(private val authService: AuthService) {
-    suspend operator fun invoke(
-        email: String,
-        password: String,
-    ): Result<DewyUser> {
-        return authService.signIn(
-            email = email,
-            password = password
-        )
-    }
-}
-
-class CreateAccountUseCase @Inject constructor(private val authService: AuthService) {
-    suspend operator fun invoke(
-        email: String,
-        password: String
-    ): Result<DewyUser> {
-        return authService.createAccount(
-            email = email,
-            password = password
-        )
     }
 }

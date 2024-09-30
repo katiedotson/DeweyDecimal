@@ -24,6 +24,7 @@ fun NavGraphBuilder.bookInputScreen(
     composable<BookInputRoute> {
         val viewModel: BookInputViewModel = hiltViewModel()
         val vmState by viewModel.state.collectAsStateWithLifecycle()
+        val bookSubjectsState by viewModel.bookSubjects.collectAsStateWithLifecycle()
         val events by viewModel.events.collectAsStateWithLifecycle()
         LaunchedEffect(events) {
             val last = events.lastOrNull()
@@ -52,14 +53,39 @@ fun NavGraphBuilder.bookInputScreen(
             onAddAuthor = viewModel::onAddAuthor,
             onLanguageValueChange = viewModel::onLanguageChipStateChange,
             onPublisherValueChange = viewModel::onPublishersChipStateChange,
-            onSubjectValueChange = viewModel::onSubjectChipStateChange,
             onSaveClicked = viewModel::onSave
+        )
+        val bookSubjectsBottomSheetState = mapToBookSubjects(
+            bookSubjects = bookSubjectsState,
+            onCustomSubjectsFieldChanged = viewModel::onCustomSubjectsFieldChanged,
+            onSubjectValueChange = viewModel::onSubjectChipStateChange,
+            onSaveSubject = viewModel::onSaveSubject
         )
         BookInputScreen(
             viewState = viewState,
-            onBackClicked = onNavigateBack
+            onBackClicked = onNavigateBack,
+            subjectsBottomSheetState = bookSubjectsBottomSheetState,
         )
     }
+}
+
+fun mapToBookSubjects(
+    bookSubjects: List<ChipState>,
+    onCustomSubjectsFieldChanged: (String) -> Unit,
+    onSubjectValueChange: (Int) -> Unit,
+    onSaveSubject: (String) -> Unit,
+): BookSubjectsBottomSheetState {
+    return BookSubjectsBottomSheetState(
+        subjects = bookSubjects.map {
+            ChipViewState(
+                isSelected = it.isSelected,
+                display = it.display
+            )
+        }.toImmutableList(),
+        onTextFieldChanged = onCustomSubjectsFieldChanged,
+        onSubjectSelected = onSubjectValueChange,
+        onSaveSubject = onSaveSubject
+    )
 }
 
 fun mapToViewState(
@@ -70,7 +96,6 @@ fun mapToViewState(
     onAddAuthor: () -> Unit,
     onLanguageValueChange: (Int) -> Unit,
     onPublisherValueChange: (Int) -> Unit,
-    onSubjectValueChange: (Int) -> Unit,
     onSaveClicked: () -> Unit
 ): BookInputViewState {
     return BookInputViewState(
@@ -104,15 +129,6 @@ fun mapToViewState(
         }.toImmutableList(),
         onPublisherValueChange = onPublisherValueChange,
         publisherError = if (vmState.publisherError) "At least one publisher is required" else null,
-        subjectsHeading = "Subject(s)",
-        subjectsSubheading = "Choose Multiple",
-        subjects = vmState.subjects.map { chipState ->
-            ChipViewState(
-                isSelected = chipState.isSelected,
-                display = chipState.display
-            )
-        }.toImmutableList(),
-        onSubjectValueChange = onSubjectValueChange,
         onSaveClicked = onSaveClicked,
     )
 }
@@ -142,11 +158,6 @@ data class BookInputViewState(
     val publishers: ImmutableList<ChipViewState>,
     val onPublisherValueChange: (Int) -> Unit,
     val publisherError: String?,
-    // subjects
-    val subjectsHeading: String,
-    val subjectsSubheading: String,
-    val subjects: ImmutableList<ChipViewState>,
-    val onSubjectValueChange: (Int) -> Unit,
     // save button
     val onSaveClicked: () -> Unit
 )
@@ -154,6 +165,13 @@ data class BookInputViewState(
 data class ChipViewState(
     val isSelected: Boolean,
     val display: String
+)
+
+data class BookSubjectsBottomSheetState(
+    val subjects: ImmutableList<ChipViewState>,
+    val onTextFieldChanged: (String) -> Unit,
+    val onSubjectSelected: (Int) -> Unit,
+    val onSaveSubject: (String) -> Unit,
 )
 
 fun NavController.navigateToBookInputScreen(bookId: String, navOptions: NavOptionsBuilder.() -> Unit = {}) {

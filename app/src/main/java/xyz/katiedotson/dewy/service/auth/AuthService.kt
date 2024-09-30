@@ -53,7 +53,7 @@ class AuthServiceImpl @Inject constructor(
 
     override suspend fun signIn(email: String, password: String): Result<DewyUser> = withContext(dispatcher) {
         return@withContext suspendCancellableCoroutine { continuation ->
-            Firebase.auth.signInWithEmailAndPassword(email, password)
+            Firebase.auth.signInWithEmailAndPassword(email.trim(), password)
                 .addOnSuccessListener { authResult ->
                     authResult.user?.uid?.let { userId ->
                         continuation.resume(
@@ -75,7 +75,7 @@ class AuthServiceImpl @Inject constructor(
 
     override suspend fun createAccount(email: String, password: String): Result<DewyUser> = withContext(dispatcher) {
         return@withContext suspendCancellableCoroutine { continuation ->
-            Firebase.auth.createUserWithEmailAndPassword(email, password)
+            Firebase.auth.createUserWithEmailAndPassword(email.trim(), password)
                 .addOnSuccessListener { authResult ->
                     authResult.user?.uid?.let { userId ->
                         continuation.resume(

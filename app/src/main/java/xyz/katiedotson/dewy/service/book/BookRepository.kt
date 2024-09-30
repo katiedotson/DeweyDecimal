@@ -18,14 +18,22 @@ import xyz.katiedotson.dewy.model.LanguageResult
 import xyz.katiedotson.dewy.model.PublisherResult
 import xyz.katiedotson.dewy.model.SubjectResult
 import xyz.katiedotson.dewy.model.UserBook
+import xyz.katiedotson.dewy.model.UserSubject
 import xyz.katiedotson.dewy.model.key
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
+@OptIn(ExperimentalStdlibApi::class)
 class BookRepository @Inject constructor(
     private val bookApiService: BookApiService,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) {
+
+    private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
+    private val userBookAdapter: JsonAdapter<UserBook> = moshi.adapter<UserBook>()
+    private val bookSearchResultAdapter: JsonAdapter<BookSearchResult> = moshi.adapter<BookSearchResult>()
+    private val userSubjectAdapter: JsonAdapter<UserSubject> = moshi.adapter<UserSubject>()
+
     suspend fun getByIsbn(isbn: String): Result<BookSearchResult> = kotlin.runCatching {
         val response = bookApiService.getByIsbn(isbn)!!
         val firstMatch = response.docs.first()
@@ -67,7 +75,6 @@ class BookRepository @Inject constructor(
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun getByKey(
         key: String
     ): Result<BookSearchResult> = withContext(dispatcher) {
@@ -77,9 +84,7 @@ class BookRepository @Inject constructor(
                     .document(key)
                     .get()
                     .addOnSuccessListener { doc ->
-                        val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
-                        val bookAdapter: JsonAdapter<BookSearchResult> = moshi.adapter<BookSearchResult>()
-                        val model = bookAdapter.fromJson(
+                        val model = bookSearchResultAdapter.fromJson(
                             JSONObject(doc.data!!).toString()
                         )!!
                         continuation.resume(
@@ -105,6 +110,68 @@ class BookRepository @Inject constructor(
                     .add(userBook)
                     .addOnSuccessListener { result ->
                         continuation.resume(Result.success(result.id))
+                    }
+                    .addOnFailureListener { e ->
+                        continuation.resume(Result.failure(e))
+                    }
+                    .addOnCanceledListener {
+                        continuation.cancel(cause = null)
+                    }
+            }
+        }
+    }
+
+    suspend fun getUserBooks(userId: String): Result<List<UserBook>> = withContext(dispatcher) {
+        return@withContext suspendCancellableCoroutine { continuation ->
+            runCatching {
+                Firebase.firestore.collection("user_books")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        val userBooks = result.documents.mapNotNull {
+                            userBookAdapter.fromJson(JSONObject(it.data!!).toString())
+                        }
+                        continuation.resume(Result.success(userBooks))
+                    }
+                    .addOnFailureListener { e ->
+                        continuation.resume(Result.failure(e))
+                    }
+                    .addOnCanceledListener {
+                        continuation.cancel(cause = null)
+                    }
+            }
+        }
+    }
+
+    suspend fun saveSubjectForUser(userSubject: UserSubject): Result<String> = withContext(dispatcher) {
+        return@withContext suspendCancellableCoroutine { continuation ->
+            runCatching {
+                Firebase.firestore.collection("user_subjects")
+                    .add(userSubject)
+                    .addOnSuccessListener { result ->
+                        continuation.resume(Result.success(result.id))
+                    }
+                    .addOnFailureListener { e ->
+                        continuation.resume(Result.failure(e))
+                    }
+                    .addOnCanceledListener {
+                        continuation.cancel(cause = null)
+                    }
+            }
+        }
+    }
+
+    suspend fun getBookSubjectsForUser(userId: String): Result<List<UserSubject>> = withContext(dispatcher) {
+        return@withContext suspendCancellableCoroutine { continuation ->
+            runCatching {
+                Firebase.firestore.collection("user_subjects")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        val userSubjects = result.documents.mapNotNull {
+                            userSubjectAdapter.fromJson(JSONObject(it.data!!).toString())
+                        }
+                        continuation.resume(Result.success(userSubjects))
                     }
                     .addOnFailureListener { e ->
                         continuation.resume(Result.failure(e))

@@ -12,11 +12,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class BookInputViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getBookInputModel: GetBookInputModelUseCase,
-    private val saveBookToLibrary: SaveBookToLibraryUseCase
+    private val saveBookToLibrary: SaveBookToLibraryUseCase,
+    private val getAllBookSubjects: GetAllBookSubjectsUseCase,
+    private val saveSubject: SaveBookSubjectUseCase,
 ) : ViewModel() {
 
     private val key = savedStateHandle.toRoute<BookInputRoute>().bookId
@@ -50,18 +53,24 @@ class BookInputViewModel @Inject constructor(
                             )
                         },
                         publisherError = false,
-                        subjects = book.subjects.mapIndexed { index, subjectName ->
-                            ChipState(
-                                index = index,
-                                display = subjectName,
-                                isSelected = false,
-                            )
-                        },
                     )
                 }
             }.onFailure { e ->
                 println(e)
             }
+        }
+        viewModelScope.launch {
+            getAllBookSubjects()
+                .onSuccess {
+                    _allBookSubjects.update {
+                        it
+                    }
+                    _bookSubjects.update {
+                        it
+                    }
+                }.onFailure {
+                    println(it)
+                }
         }
     }
 
@@ -75,10 +84,13 @@ class BookInputViewModel @Inject constructor(
             languageError = false,
             publishers = listOf(),
             publisherError = false,
-            subjects = listOf(),
         )
     )
     val state = _state.asStateFlow()
+
+    private val _allBookSubjects = MutableStateFlow<List<ChipState>>(listOf())
+    private val _bookSubjects = MutableStateFlow<List<ChipState>>(listOf())
+    val bookSubjects = _bookSubjects.asStateFlow()
 
     private val _events = MutableStateFlow<List<Event>>(listOf())
     val events = _events.asStateFlow()
@@ -161,18 +173,45 @@ class BookInputViewModel @Inject constructor(
     }
 
     fun onSubjectChipStateChange(index: Int) {
-        _state.update { current ->
-            current.copy(
-                subjects = current
-                    .subjects
-                    .mapIndexed { fieldIndex, field ->
-                        return@mapIndexed if (index == fieldIndex) {
-                            field.copy(isSelected = field.isSelected.not())
-                        } else {
-                            field
-                        }
+        _bookSubjects.update { current ->
+            current.mapIndexed { fieldIndex, field ->
+                return@mapIndexed if (index == fieldIndex) {
+                    field.copy(isSelected = field.isSelected.not())
+                } else {
+                    field
+                }
+            }
+        }
+    }
+
+    fun onCustomSubjectsFieldChanged(value: String) {
+        _bookSubjects.update {
+            _allBookSubjects.value.filter {
+                it.display.contains(value)
+            }
+        }
+    }
+
+    fun onSaveSubject(subjectName: String) {
+        viewModelScope.launch {
+            saveSubject(subjectName)
+                .onSuccess {
+                    _allBookSubjects.update { current ->
+                        current.plus(
+                            ChipState(
+                                index = current.size,
+                                display = subjectName,
+                                isSelected = true
+                            )
+                        )
                     }
-            )
+                }
+                .onFailure {
+                    it.printStackTrace()
+                    _events.update { current ->
+                        current + Event.Error
+                    }
+                }
         }
     }
 
@@ -227,9 +266,7 @@ class BookInputViewModel @Inject constructor(
             publishers = this.publishers.map {
                 it.display
             },
-            subjects = this.subjects.map {
-                it.display
-            }
+            subjects = listOf()
         )
     }
 }
@@ -248,7 +285,6 @@ data class BookInputState(
     val languageError: Boolean,
     val publishers: List<ChipState>,
     val publisherError: Boolean,
-    val subjects: List<ChipState>
 )
 
 data class ChipState(val index: Int, val display: String, val isSelected: Boolean)
