@@ -3,6 +3,7 @@ package xyz.katiedotson.dewy.service.book
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -84,12 +85,16 @@ class BookRepository @Inject constructor(
                     .document(key)
                     .get()
                     .addOnSuccessListener { doc ->
-                        val model = bookSearchResultAdapter.fromJson(
-                            JSONObject(doc.data!!).toString()
-                        )!!
-                        continuation.resume(
-                            Result.success(model)
-                        )
+                        try {
+                            val model = bookSearchResultAdapter.fromJson(
+                                JSONObject(doc.data!!).toString()
+                            )!!
+                            continuation.resume(
+                                Result.success(model)
+                            )
+                        } catch (e: JsonDataException) {
+                            continuation.resume(Result.failure(e))
+                        }
                     }
                     .addOnFailureListener { e ->
                         continuation.resume(
@@ -128,10 +133,14 @@ class BookRepository @Inject constructor(
                     .whereEqualTo("userId", userId)
                     .get()
                     .addOnSuccessListener { result ->
-                        val userBooks = result.documents.mapNotNull {
-                            userBookAdapter.fromJson(JSONObject(it.data!!).toString())
+                        try {
+                            val userBooks = result.documents.mapNotNull {
+                                userBookAdapter.fromJson(JSONObject(it.data!!).toString())
+                            }
+                            continuation.resume(Result.success(userBooks))
+                        } catch (t: JsonDataException) {
+                            continuation.resume(Result.failure(t))
                         }
-                        continuation.resume(Result.success(userBooks))
                     }
                     .addOnFailureListener { e ->
                         continuation.resume(Result.failure(e))
@@ -139,6 +148,8 @@ class BookRepository @Inject constructor(
                     .addOnCanceledListener {
                         continuation.cancel(cause = null)
                     }
+            }.onFailure {
+                continuation.resume(Result.failure(it))
             }
         }
     }
@@ -157,6 +168,8 @@ class BookRepository @Inject constructor(
                     .addOnCanceledListener {
                         continuation.cancel(cause = null)
                     }
+            }.onFailure {
+                continuation.resume(Result.failure(it))
             }
         }
     }
@@ -168,10 +181,15 @@ class BookRepository @Inject constructor(
                     .whereEqualTo("userId", userId)
                     .get()
                     .addOnSuccessListener { result ->
-                        val userSubjects = result.documents.mapNotNull {
-                            userSubjectAdapter.fromJson(JSONObject(it.data!!).toString())
+                        try {
+                            val userSubjects = result.documents.mapNotNull {
+                                userSubjectAdapter.fromJson(JSONObject(it.data!!).toString())
+                            }
+                            continuation.resume(Result.success(userSubjects))
+                        } catch (e: JsonDataException) {
+                            println(e)
+                            continuation.resume(Result.failure(e))
                         }
-                        continuation.resume(Result.success(userSubjects))
                     }
                     .addOnFailureListener { e ->
                         continuation.resume(Result.failure(e))

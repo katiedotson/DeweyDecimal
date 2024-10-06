@@ -233,7 +233,7 @@ class BookInputViewModel @Inject constructor(
     fun onSave() {
         if (validate()) {
             viewModelScope.launch {
-                val bookInputModel = _state.value.toBookInputModel()
+                val bookInputModel = _state.value.toSavedBookModel()
                 saveBookToLibrary(bookInputModel)
                     .onSuccess {
                         _events.update { current ->
@@ -268,8 +268,8 @@ class BookInputViewModel @Inject constructor(
         return titleIsValid && authorIsValid && publisherIsValid && languageIsValid
     }
 
-    private fun BookInputState.toBookInputModel(): BookInputModel {
-        return BookInputModel(
+    private fun BookInputState.toSavedBookModel(): SavedBookInput {
+        return SavedBookInput(
             key = key,
             title = this.titleState.text,
             authors = this.authors.map {
@@ -278,9 +278,11 @@ class BookInputViewModel @Inject constructor(
             languages = this.languages.map {
                 it.display
             },
-            publishers = this.publishers.map {
-                it.display
-            },
+            publisher = this
+                .publishers
+                .filter { it.isSelected }
+                .map { it.display }
+                .first(),
             subjects = listOf()
         )
     }
