@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -61,15 +64,21 @@ class BookInputViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getAllBookSubjects()
-                .onSuccess {
-                    _allBookSubjects.update {
-                        it
-                    }
-                    _bookSubjects.update {
-                        it
-                    }
-                }.onFailure {
-                    println(it)
+                .onSuccess { userSubjects ->
+                    _allBookSubjects
+                        .update {
+                            userSubjects
+                                .map {
+                                    SubjectState(
+                                        display = it.name,
+                                        isApplied = false,
+                                        showInFiltered = true,
+                                    )
+                                }
+                                .toImmutableList()
+                        }
+                }.onFailure { e ->
+                    println(e)
                 }
         }
     }
@@ -88,9 +97,8 @@ class BookInputViewModel @Inject constructor(
     )
     val state = _state.asStateFlow()
 
-    private val _allBookSubjects = MutableStateFlow<List<ChipState>>(listOf())
-    private val _bookSubjects = MutableStateFlow<List<ChipState>>(listOf())
-    val bookSubjects = _bookSubjects.asStateFlow()
+    private val _allBookSubjects = MutableStateFlow<ImmutableList<SubjectState>>(persistentListOf())
+    val allBookSubjects = _allBookSubjects.asStateFlow()
 
     private val _events = MutableStateFlow<List<Event>>(listOf())
     val events = _events.asStateFlow()
@@ -173,22 +181,26 @@ class BookInputViewModel @Inject constructor(
     }
 
     fun onSubjectChipStateChange(index: Int) {
-        _bookSubjects.update { current ->
-            current.mapIndexed { fieldIndex, field ->
-                return@mapIndexed if (index == fieldIndex) {
-                    field.copy(isSelected = field.isSelected.not())
-                } else {
-                    field
+        _allBookSubjects.update { current ->
+            current
+                .mapIndexed { fieldIndex, field ->
+                    return@mapIndexed if (index == fieldIndex) {
+                        field.copy(isApplied = field.isApplied.not())
+                    } else {
+                        field
+                    }
                 }
-            }
+                .toImmutableList()
         }
     }
 
     fun onCustomSubjectsFieldChanged(value: String) {
-        _bookSubjects.update {
-            _allBookSubjects.value.filter {
-                it.display.contains(value)
-            }
+        _allBookSubjects.update { current ->
+            current
+                .map { field ->
+                    field.copy(showInFiltered = field.display.contains(value))
+                }
+                .toImmutableList()
         }
     }
 
@@ -197,17 +209,20 @@ class BookInputViewModel @Inject constructor(
             saveSubject(subjectName)
                 .onSuccess {
                     _allBookSubjects.update { current ->
-                        current.plus(
-                            ChipState(
-                                index = current.size,
-                                display = subjectName,
-                                isSelected = true
+                        buildList {
+                            addAll(current)
+                            add(
+                                SubjectState(
+                                    display = subjectName,
+                                    isApplied = true,
+                                    showInFiltered = true,
+                                )
                             )
-                        )
+                        }.toImmutableList()
                     }
                 }
-                .onFailure {
-                    it.printStackTrace()
+                .onFailure { e ->
+                    println(e)
                     _events.update { current ->
                         current + Event.Error
                     }
@@ -288,3 +303,5 @@ data class BookInputState(
 )
 
 data class ChipState(val index: Int, val display: String, val isSelected: Boolean)
+
+data class SubjectState(val display: String, val isApplied: Boolean, val showInFiltered: Boolean)

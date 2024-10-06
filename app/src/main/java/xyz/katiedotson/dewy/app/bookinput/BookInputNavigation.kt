@@ -13,7 +13,6 @@ import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.bookInputScreen(
@@ -24,7 +23,7 @@ fun NavGraphBuilder.bookInputScreen(
     composable<BookInputRoute> {
         val viewModel: BookInputViewModel = hiltViewModel()
         val vmState by viewModel.state.collectAsStateWithLifecycle()
-        val bookSubjectsState by viewModel.bookSubjects.collectAsStateWithLifecycle()
+        val subjects by viewModel.allBookSubjects.collectAsStateWithLifecycle()
         val events by viewModel.events.collectAsStateWithLifecycle()
         LaunchedEffect(events) {
             val last = events.lastOrNull()
@@ -53,42 +52,20 @@ fun NavGraphBuilder.bookInputScreen(
             onAddAuthor = viewModel::onAddAuthor,
             onLanguageValueChange = viewModel::onLanguageChipStateChange,
             onPublisherValueChange = viewModel::onPublishersChipStateChange,
-            onSaveClicked = viewModel::onSave
-        )
-        val bookSubjectsBottomSheetState = mapToBookSubjects(
-            bookSubjects = bookSubjectsState,
+            subjects = subjects,
             onCustomSubjectsFieldChanged = viewModel::onCustomSubjectsFieldChanged,
-            onSubjectValueChange = viewModel::onSubjectChipStateChange,
-            onSaveSubject = viewModel::onSaveSubject
+            onSubjectSelected = viewModel::onSubjectChipStateChange,
+            onSaveSubject = viewModel::onSaveSubject,
+            onSaveClicked = viewModel::onSave,
         )
         BookInputScreen(
             viewState = viewState,
             onBackClicked = onNavigateBack,
-            subjectsBottomSheetState = bookSubjectsBottomSheetState,
         )
     }
 }
 
-fun mapToBookSubjects(
-    bookSubjects: List<ChipState>,
-    onCustomSubjectsFieldChanged: (String) -> Unit,
-    onSubjectValueChange: (Int) -> Unit,
-    onSaveSubject: (String) -> Unit,
-): BookSubjectsBottomSheetState {
-    return BookSubjectsBottomSheetState(
-        subjects = bookSubjects.map {
-            ChipViewState(
-                isSelected = it.isSelected,
-                display = it.display
-            )
-        }.toImmutableList(),
-        onTextFieldChanged = onCustomSubjectsFieldChanged,
-        onSubjectSelected = onSubjectValueChange,
-        onSaveSubject = onSaveSubject
-    )
-}
-
-fun mapToViewState(
+internal fun mapToViewState(
     vmState: BookInputState,
     onTitleChanged: (TextFieldValue) -> Unit,
     onAuthorsFieldValueChange: (Int, TextFieldValue) -> Unit,
@@ -96,15 +73,21 @@ fun mapToViewState(
     onAddAuthor: () -> Unit,
     onLanguageValueChange: (Int) -> Unit,
     onPublisherValueChange: (Int) -> Unit,
+    subjects: ImmutableList<SubjectState>,
+    onCustomSubjectsFieldChanged: (String) -> Unit,
+    onSubjectSelected: (Int) -> Unit,
+    onSaveSubject: (String) -> Unit,
     onSaveClicked: () -> Unit
 ): BookInputViewState {
     return BookInputViewState(
+        heading = "We found your book.",
+        subheading = "Check over the details before saving it to your library.",
         titleLabel = "Title",
         titleValue = vmState.titleState,
         onTitleChanged = onTitleChanged,
         titleError = if (vmState.titleError) "A title is required" else null,
         authorLabel = "Author",
-        authors = vmState.authors.toPersistentList(),
+        authors = vmState.authors.toImmutableList(),
         onAuthorFieldChanged = onAuthorsFieldValueChange,
         onRemoveAuthor = onRemoveAuthor,
         onAddAuthor = onAddAuthor,
@@ -129,11 +112,33 @@ fun mapToViewState(
         }.toImmutableList(),
         onPublisherValueChange = onPublisherValueChange,
         publisherError = if (vmState.publisherError) "At least one publisher is required" else null,
+        subjectsHeading = "Subjects",
+        addCustomSubjectButtonText = "Add & manage subjects",
+        appliedSubjects = subjects.filter { it.isApplied }.map { it.display }.toImmutableList(),
+        filteredSubjects = subjects
+            .filter {
+                it.showInFiltered
+            }
+            .map {
+                ChipViewState(
+                    isSelected = it.isApplied,
+                    display = it.display
+                )
+            }
+            .toImmutableList(),
+        onSubjectTextFieldChanged = onCustomSubjectsFieldChanged,
+        onSubjectSelected = onSubjectSelected,
+        onSaveSubject = onSaveSubject,
+        saveButtonText = "Save to library",
         onSaveClicked = onSaveClicked,
+        selectedChipContentDescription = "Selected"
     )
 }
 
 data class BookInputViewState(
+    // heading
+    val heading: String,
+    val subheading: String,
     // title
     val titleLabel: String,
     val titleValue: TextFieldValue,
@@ -158,20 +163,24 @@ data class BookInputViewState(
     val publishers: ImmutableList<ChipViewState>,
     val onPublisherValueChange: (Int) -> Unit,
     val publisherError: String?,
+    // subjects
+    val subjectsHeading: String,
+    val addCustomSubjectButtonText: String,
+    val appliedSubjects: ImmutableList<String>,
+    val filteredSubjects: ImmutableList<ChipViewState>,
+    val onSubjectTextFieldChanged: (String) -> Unit,
+    val onSubjectSelected: (Int) -> Unit,
+    val onSaveSubject: (String) -> Unit,
     // save button
-    val onSaveClicked: () -> Unit
+    val saveButtonText: String,
+    val onSaveClicked: () -> Unit,
+    // other
+    val selectedChipContentDescription: String,
 )
 
 data class ChipViewState(
     val isSelected: Boolean,
     val display: String
-)
-
-data class BookSubjectsBottomSheetState(
-    val subjects: ImmutableList<ChipViewState>,
-    val onTextFieldChanged: (String) -> Unit,
-    val onSubjectSelected: (Int) -> Unit,
-    val onSaveSubject: (String) -> Unit,
 )
 
 fun NavController.navigateToBookInputScreen(bookId: String, navOptions: NavOptionsBuilder.() -> Unit = {}) {

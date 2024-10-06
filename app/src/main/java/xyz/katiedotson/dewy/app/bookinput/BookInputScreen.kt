@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -29,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,178 +54,104 @@ import xyz.katiedotson.dewy.ui.component.DewyTextField
 import xyz.katiedotson.dewy.ui.theme.AppTypography
 import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun BookInputScreen(
     viewState: BookInputViewState,
-    subjectsBottomSheetState: BookSubjectsBottomSheetState,
     onBackClicked: () -> Unit,
 ) {
     var showBottomSheet by remember { mutableStateOf(value = false) }
-    var subjectsText by remember { mutableStateOf(value = "") }
-    Surface {
+    Surface(
+        modifier = Modifier.fillMaxSize()
+
+    ) {
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp)
                 .padding(bottom = 24.dp)
-                .verticalScroll(rememberScrollState())
         ) {
-            Heading(
-                onBackClicked = onBackClicked
-            )
-            Text(
-                text = "Title & Author",
-                style = AppTypography.titleMedium,
-            )
-            TitleSection(
-                titleLabel = viewState.titleLabel,
-                titleValue = viewState.titleValue,
-                onTitleChanged = viewState.onTitleChanged,
-                titleError = viewState.titleError
-            )
-            AuthorSection(
-                authorLabel = viewState.authorLabel,
-                authors = viewState.authors,
-                onAuthorFieldChanged = viewState.onAuthorFieldChanged,
-                onRemoveAuthor = viewState.onRemoveAuthor,
-                onAddAuthor = viewState.onAddAuthor,
-                authorError = viewState.authorError,
-            )
-            ChipsSection(
-                sectionHeading = viewState.languagesHeading,
-                sectionSubheading = viewState.languagesSubheading,
-                values = viewState.languages,
-                onChange = viewState.onLanguageValueChange,
-                errorMessage = viewState.languageError
-            )
-            ChipsSection(
-                sectionHeading = viewState.publisherHeading,
-                sectionSubheading = viewState.publisherSubheading,
-                values = viewState.publishers,
-                onChange = viewState.onPublisherValueChange,
-                errorMessage = viewState.publisherError
-            )
-            Text(
-                modifier = Modifier.padding(top = 24.dp),
-                text = "Subjects",
-                style = AppTypography.titleMedium,
-            )
-            FlowRow(
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                subjectsBottomSheetState.subjects.forEach {
-                    FilterChip(
-                        colors = FilterChipDefaults.filterChipColors().copy(
-                            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        selected = true,
-                        onClick = {
-                            showBottomSheet = true
-                        },
-                        label = {
-                            Text(
-                                text = it.display,
-                            )
-                        }
-                    )
-                }
-            }
-            AddCustomSubjectsButton(
-                onClick = {
+            MainContent(
+                onBackClicked,
+                onOpenSubjectsSheet = {
                     showBottomSheet = true
-                }
-            )
-            SaveButton(
-                viewState.onSaveClicked
+                },
+                viewState = viewState,
             )
         }
     }
     if (showBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                showBottomSheet = false
-            }
-        ) {
-            BottomSheetContent(
-                subjectsBottomSheetState = subjectsBottomSheetState,
-                subjectsText = subjectsText,
-                onTextFieldChange = {
-                    subjectsText = it
-                    subjectsBottomSheetState.onTextFieldChanged(it)
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun BottomSheetContent(
-    subjectsBottomSheetState: BookSubjectsBottomSheetState,
-    subjectsText: String,
-    onTextFieldChange: (String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .padding(bottom = 24.dp)
-    ) {
-        DewyTextField(
-            onValueChange = onTextFieldChange,
-            value = subjectsText,
-            placeholder = "Search for existing subjects, or add a new one...",
-            label = "Subject name"
+        BookSubjectsBottomSheet(
+            onDismiss = { showBottomSheet = false },
+            onSubjectTextFieldChanged = viewState.onSubjectTextFieldChanged,
+            filteredSubjects = viewState.filteredSubjects,
+            onSaveSubject = viewState.onSaveSubject,
+            onSubjectSelected = viewState.onSubjectSelected,
         )
-        if (subjectsBottomSheetState.subjects.isEmpty()) {
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.inverseSurface
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp),
-                onClick = { subjectsBottomSheetState.onSaveSubject(subjectsText) },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                )
-                Spacer(modifier = Modifier.padding(horizontal = 16.dp))
-                Text(
-                    text = "Save as new subject",
-                    style = AppTypography.bodyLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        } else {
-            ChipsSection(
-                sectionHeading = "Subjects",
-                sectionSubheading = null,
-                values = subjectsBottomSheetState.subjects,
-                onChange = subjectsBottomSheetState.onSubjectSelected,
-                errorMessage = null
-            )
-        }
     }
 }
 
 @Composable
-private fun AddCustomSubjectsButton(
-    onClick: () -> Unit
+private fun MainContent(
+    onBackClicked: () -> Unit,
+    onOpenSubjectsSheet: () -> Unit,
+    viewState: BookInputViewState,
 ) {
-    Row(
-        modifier = Modifier.padding(top = 8.dp)
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        TextButton(
-            onClick = onClick
-        ) {
-            Text(text = "Add custom subjects")
-        }
-    }
+    Heading(
+        viewState.heading,
+        viewState.subheading,
+        onBackClicked = onBackClicked
+    )
+    Text(
+        text = "Title & Author",
+        style = AppTypography.titleMedium,
+    )
+    TitleSection(
+        titleLabel = viewState.titleLabel,
+        titleValue = viewState.titleValue,
+        onTitleChanged = viewState.onTitleChanged,
+        titleError = viewState.titleError
+    )
+    AuthorSection(
+        authorLabel = viewState.authorLabel,
+        authors = viewState.authors,
+        onAuthorFieldChanged = viewState.onAuthorFieldChanged,
+        onRemoveAuthor = viewState.onRemoveAuthor,
+        onAddAuthor = viewState.onAddAuthor,
+        authorError = viewState.authorError,
+    )
+    ChipsSection(
+        sectionHeading = viewState.languagesHeading,
+        sectionSubheading = viewState.languagesSubheading,
+        values = viewState.languages,
+        onChange = viewState.onLanguageValueChange,
+        errorMessage = viewState.languageError,
+        selectedChipContentDescription = viewState.selectedChipContentDescription,
+    )
+    ChipsSection(
+        sectionHeading = viewState.publisherHeading,
+        sectionSubheading = viewState.publisherSubheading,
+        values = viewState.publishers,
+        onChange = viewState.onPublisherValueChange,
+        errorMessage = viewState.publisherError,
+        selectedChipContentDescription = viewState.selectedChipContentDescription,
+    )
+    SubjectsSection(
+        subjectsSectionHeading = viewState.subjectsHeading,
+        addCustomSubjectsButtonText = viewState.addCustomSubjectButtonText,
+        onEditClicked = onOpenSubjectsSheet,
+        appliedSubjects = viewState.appliedSubjects,
+    )
+    SaveButton(
+        saveButtonText = viewState.saveButtonText,
+        onSaveClicked = viewState.onSaveClicked
+    )
 }
 
 @Composable
 private fun Heading(
+    heading: String,
+    subheading: String,
     onBackClicked: () -> Unit
 ) {
     IconButton(
@@ -240,12 +168,12 @@ private fun Heading(
     }
     Text(
         modifier = Modifier.padding(bottom = 8.dp),
-        text = "We found your book.",
+        text = heading,
         style = AppTypography.displaySmall
     )
     Text(
         modifier = Modifier.padding(bottom = 24.dp),
-        text = "Check over the details before saving it to your library.",
+        text = subheading,
         style = AppTypography.bodyLarge
     )
 }
@@ -338,6 +266,7 @@ private fun ChipsSection(
     values: ImmutableList<ChipViewState>,
     onChange: (Int) -> Unit,
     errorMessage: String?,
+    selectedChipContentDescription: String,
 ) {
     Text(
         modifier = Modifier.padding(top = 24.dp),
@@ -359,7 +288,7 @@ private fun ChipsSection(
                     if (chipViewState.isSelected) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Selected"
+                            contentDescription = selectedChipContentDescription
                         )
                     }
                 },
@@ -407,8 +336,63 @@ private fun InlineErrorMessage(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SubjectsSection(
+    subjectsSectionHeading: String,
+    addCustomSubjectsButtonText: String,
+    onEditClicked: () -> Unit,
+    appliedSubjects: List<String>,
+) {
+    Text(
+        modifier = Modifier.padding(top = 24.dp),
+        text = subjectsSectionHeading,
+        style = AppTypography.titleMedium,
+    )
+    AddCustomSubjectsButton(
+        addCustomSubjectsButtonText = addCustomSubjectsButtonText,
+        onClick = onEditClicked
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        appliedSubjects.forEach {
+            Text(
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = FilterChipDefaults.shape
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                text = it,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                style = AppTypography.labelMedium
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddCustomSubjectsButton(
+    addCustomSubjectsButtonText: String,
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier.offset(x = (-8).dp)
+    ) {
+        Text(text = addCustomSubjectsButtonText, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+    }
+}
+
 @Composable
 private fun SaveButton(
+    saveButtonText: String,
     onSaveClicked: () -> Unit,
 ) {
     Button(
@@ -421,7 +405,7 @@ private fun SaveButton(
         onClick = onSaveClicked,
     ) {
         Text(
-            text = "Save",
+            text = saveButtonText,
             style = AppTypography.bodyLarge,
             fontWeight = FontWeight.Bold
         )
@@ -436,6 +420,8 @@ private fun BookInputScreenPreview() {
         BookInputScreen(
             onBackClicked = {},
             viewState = BookInputViewState(
+                heading = "We found your book.",
+                subheading = "Check over the details before saving it to your library.",
                 titleLabel = "Title",
                 titleValue = TextFieldValue(text = "Burning Chrome"),
                 onTitleChanged = {},
@@ -459,14 +445,19 @@ private fun BookInputScreenPreview() {
                 ),
                 onPublisherValueChange = { _ -> },
                 publisherError = "At least one publisher must be selected",
-                onSaveClicked = {},
-            ),
-            subjectsBottomSheetState = BookSubjectsBottomSheetState(
-                subjects = persistentListOf(ChipViewState(isSelected = true, display = "Shakespeare")),
-                onTextFieldChanged = { _ -> },
+                appliedSubjects = persistentListOf(
+                    "Shakespeare"
+                ),
+                subjectsHeading = "Subjects",
+                addCustomSubjectButtonText = "Add & manage subjects",
+                filteredSubjects = persistentListOf(),
+                onSubjectTextFieldChanged = { _ -> },
                 onSubjectSelected = { _ -> },
                 onSaveSubject = { _ -> },
-            )
+                saveButtonText = "Save",
+                onSaveClicked = {},
+                selectedChipContentDescription = "Selected",
+            ),
         )
     }
 }
@@ -477,14 +468,12 @@ private fun BottomSheetPreview() {
     DeweyDecimalTheme {
         Surface {
             BottomSheetContent(
-                subjectsBottomSheetState = BookSubjectsBottomSheetState(
-                    subjects = persistentListOf(),
-                    onSubjectSelected = { _ -> },
-                    onTextFieldChanged = { _ -> },
-                    onSaveSubject = { _ -> },
-                ),
-                subjectsText = "",
-                onTextFieldChange = { _ -> }
+                filteredSubjects = persistentListOf(),
+                subjectsText = "Subject",
+                onTextFieldChange = { _ -> },
+                onSaveSubject = { _ -> },
+                onDismiss = {},
+                onSubjectSelected = { _ -> },
             )
         }
     }
