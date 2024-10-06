@@ -18,6 +18,6 @@ data class Document(
     @Json(name = "publish_year") val publishYear: List<Int>,
     val publisher: List<String>,
     val title: String,
-    val subject: List<String>,
-    @Json(name = "ddc_sort") val ddcSort: String,
+    val subject: List<String>?,
+    @Json(name = "ddc_sort") val ddcSort: String?,
 )

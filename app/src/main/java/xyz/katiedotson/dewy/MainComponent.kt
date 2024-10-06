@@ -14,6 +14,8 @@ import xyz.katiedotson.dewy.app.bookinput.bookInputScreen
 import xyz.katiedotson.dewy.app.bookinput.navigateToBookInputScreen
 import xyz.katiedotson.dewy.app.camerascan.cameraScanScreen
 import xyz.katiedotson.dewy.app.camerascan.navigateToCameraScanScreen
+import xyz.katiedotson.dewy.app.manualentry.manualEntryScreen
+import xyz.katiedotson.dewy.app.manualentry.navigateToManualEntry
 import xyz.katiedotson.dewy.app.onboarding.OnboardingRoute
 import xyz.katiedotson.dewy.app.onboarding.onboardingScreen
 import xyz.katiedotson.dewy.app.search.SearchRoute
@@ -41,7 +43,16 @@ fun MainComponent() {
                     snackbarHostState = snackbarHostState
                 )
                 cameraScanScreen(
-                    onNavigateToBookInput = navController::navigateToBookInputScreen
+                    onNavigateToBookInput = navController::navigateToBookInputScreen,
+                    onNavigateToManualEntry = {
+                        navController.navigateToManualEntry {
+                            popUpTo(SearchRoute)
+                        }
+                    },
+                )
+                manualEntryScreen(
+                    onNavigateBack = navController::popBackStack,
+                    onNavigateToBookInput = navController::navigateToBookInputScreen,
                 )
                 bookInputScreen(
                     onNavigateBack = navController::popBackStack,

@@ -24,7 +24,10 @@ fun NavController.navigateToCameraScanScreen(
     navOptions()
 }
 
-fun NavGraphBuilder.cameraScanScreen(onNavigateToBookInput: (String) -> Unit) {
+fun NavGraphBuilder.cameraScanScreen(
+    onNavigateToBookInput: (String) -> Unit,
+    onNavigateToManualEntry: () -> Unit,
+) {
     composable<CameraScanRoute>(
         enterTransition = {
             slideIntoContainer(
@@ -56,7 +59,8 @@ fun NavGraphBuilder.cameraScanScreen(onNavigateToBookInput: (String) -> Unit) {
             vmState = vmState,
             onTextDetected = cameraScanViewModel::textDetected,
             onBottomSheetDismissed = cameraScanViewModel::unpause,
-            onConfirmBookResult = cameraScanViewModel::onBookResultConfirmed
+            onConfirmBookResult = cameraScanViewModel::onBookResultConfirmed,
+            onGoToManualEntry = onNavigateToManualEntry,
         )
         CameraScanScreen(
             viewState = viewState
@@ -68,6 +72,7 @@ internal data class CameraScanViewState(
     val onTextDetected: (DetectedText) -> Unit,
     val onBottomSheetDismissed: () -> Unit,
     val onBookResultConfirmed: () -> Unit,
+    val onGoToManualEntry: () -> Unit,
     val showSheet: Boolean,
     val bottomSheetState: BottomSheetState?,
 )
@@ -83,6 +88,7 @@ internal fun mapCameraScanViewState(
     onTextDetected: (DetectedText) -> Unit,
     onBottomSheetDismissed: () -> Unit,
     onConfirmBookResult: () -> Unit,
+    onGoToManualEntry: () -> Unit,
 ): CameraScanViewState {
     val bottomSheetState = mapBottomSheetState(vmState)
     return CameraScanViewState(
@@ -90,7 +96,8 @@ internal fun mapCameraScanViewState(
         onTextDetected = onTextDetected,
         onBottomSheetDismissed = onBottomSheetDismissed,
         showSheet = bottomSheetState != null,
-        onBookResultConfirmed = onConfirmBookResult
+        onBookResultConfirmed = onConfirmBookResult,
+        onGoToManualEntry = onGoToManualEntry,
     )
 }
 
@@ -106,7 +113,9 @@ internal fun mapBottomSheetState(vmState: CameraScanState): BottomSheetState? {
                 title = vmState.match.title,
                 author = vmState.match.authors.joinToString(
                     limit = 4
-                )
+                ) {
+                    it.fullName
+                }
             )
         }
         CameraScanState.MatchNotFound -> {

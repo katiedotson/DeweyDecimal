@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -54,7 +53,6 @@ import xyz.katiedotson.dewy.ui.component.DewyTextField
 import xyz.katiedotson.dewy.ui.theme.AppTypography
 import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun BookInputScreen(
     viewState: BookInputViewState,
@@ -63,7 +61,6 @@ internal fun BookInputScreen(
     var showBottomSheet by remember { mutableStateOf(value = false) }
     Surface(
         modifier = Modifier.fillMaxSize()
-
     ) {
         Column(
             modifier = Modifier

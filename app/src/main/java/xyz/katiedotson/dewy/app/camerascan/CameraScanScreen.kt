@@ -63,7 +63,8 @@ internal fun CameraScanScreen(
                         sheetState = sheetState,
                         scope = scope,
                         onBottomSheetDismissed = viewState.onBottomSheetDismissed,
-                        onMatchConfirmed = viewState.onBookResultConfirmed
+                        onMatchConfirmed = viewState.onBookResultConfirmed,
+                        onGoToManualEntry = viewState.onGoToManualEntry,
                     )
                 }
             }
@@ -78,7 +79,8 @@ private fun BottomSheetContent(
     sheetState: SheetState,
     scope: CoroutineScope,
     onBottomSheetDismissed: () -> Unit,
-    onMatchConfirmed: () -> Unit
+    onMatchConfirmed: () -> Unit,
+    onGoToManualEntry: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -122,6 +124,13 @@ private fun BottomSheetContent(
                     Text(text = "Confirm", style = AppTypography.labelLarge)
                 }
             }
+            if (bottomSheetState is BottomSheetState.MatchNotFound) {
+                Button(
+                    onClick = onGoToManualEntry,
+                ) {
+                    Text(text = "Search Manually", style = AppTypography.labelLarge)
+                }
+            }
         }
     }
 }
@@ -140,6 +149,7 @@ private fun BottomSheetContentMatchFoundPreview() {
                 ),
                 onBottomSheetDismissed = {},
                 onMatchConfirmed = {},
+                onGoToManualEntry = {},
                 scope = rememberCoroutineScope(),
                 sheetState = rememberModalBottomSheetState()
             )

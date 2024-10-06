@@ -48,8 +48,8 @@ class BookRepository @Inject constructor(
             isbns = firstMatch.isbn.map { IsbnResult(it) },
             openLibraryKey = firstMatch.key,
             publishedYears = firstMatch.publishYear,
-            subjects = firstMatch.subject.map { SubjectResult(it) },
-            ddcSort = firstMatch.ddcSort
+            subjects = firstMatch.subject?.map { SubjectResult(it) } ?: emptyList(),
+            ddcSort = firstMatch.ddcSort ?: ""
         )
     }
 
