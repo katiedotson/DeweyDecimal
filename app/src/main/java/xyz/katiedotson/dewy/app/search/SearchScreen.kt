@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +41,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import xyz.katiedotson.dewy.model.UserBook
+import xyz.katiedotson.dewy.ui.component.Loader
 import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -54,6 +54,7 @@ internal fun SearchScreen(
     val permissionsViewModel: PermissionsViewModel = hiltViewModel()
     val searchViewModel: SearchViewModel = hiltViewModel()
     val userBooks by searchViewModel.books.collectAsStateWithLifecycle()
+    val isLoading by searchViewModel.loading.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val cameraPermissionState = rememberPermissionState(
         permission = android.Manifest.permission.CAMERA,
@@ -86,6 +87,9 @@ internal fun SearchScreen(
             )
         }
     }
+
+    Loader(isVisible = isLoading)
+
     ScreenContent(
         scrollState = scrollState,
         books = userBooks.toImmutableList(),
@@ -105,9 +109,11 @@ private fun ScreenContent(
     onAddButtonClick: () -> Unit,
 ) {
     Surface {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
             Column {
                 books.forEach {
                     BookCard(it)

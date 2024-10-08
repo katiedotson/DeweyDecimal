@@ -6,11 +6,13 @@ import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 
 @Composable
 internal fun buildCameraController(
@@ -33,7 +35,7 @@ internal fun buildCameraController(
     }
 
     cameraController.setImageAnalysisAnalyzer(
-        ContextCompat.getMainExecutor(context),
+        Dispatchers.IO.asExecutor(),
         analyzer
     )
 

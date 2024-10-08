@@ -102,6 +102,9 @@ dependencies {
     // logging
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
+    // animations
+    implementation "com.airbnb.android:lottie-compose:6.5.2"
+
     // room
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"

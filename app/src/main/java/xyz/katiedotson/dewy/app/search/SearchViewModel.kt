@@ -19,20 +19,35 @@ class SearchViewModel @Inject constructor(
     private val _books = MutableStateFlow<List<UserBook>>(listOf())
     val books = _books.asStateFlow()
 
+    private val _loading = MutableStateFlow(true)
+    val loading = _loading.asStateFlow()
+
     init {
         viewModelScope.launch {
+            _loading.update {
+                true
+            }
             runCatching {
                 getUserBooksUseCase()
                     .onSuccess { userBooks ->
                         _books.update {
                             userBooks
                         }
+                        _loading.update {
+                            false
+                        }
                     }
                     .onFailure { e ->
                         Timber.e(e)
+                        _loading.update {
+                            false
+                        }
                     }
             }.onFailure {
                 Timber.e(it)
+                _loading.update {
+                    false
+                }
             }
         }
     }
