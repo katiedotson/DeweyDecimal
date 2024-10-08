@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import xyz.katiedotson.dewy.model.BookSearchResult
 import xyz.katiedotson.dewy.model.key
 import xyz.katiedotson.dewy.service.book.BookRepository
@@ -39,7 +40,7 @@ class ManualEntryViewModel @Inject constructor(
                     }
                 }
                 .onFailure { e ->
-                    println(e)
+                    Timber.e(e)
                     _state.update {
                         ManualEntryState.MatchNotFound
                     }
@@ -56,13 +57,13 @@ class ManualEntryViewModel @Inject constructor(
                         _events.update { events ->
                             events + Event.MatchConfirmed(match.key)
                         }
-                    }.onFailure {
-                        println("something went wrong with firebase")
+                    }.onFailure { e ->
+                        Timber.e(t = e, message = "something went wrong with firebase")
                     }
             }
             return
         }
-        println("Book result confirmed when no match exists")
+        Timber.e(message = "Book result confirmed when no match exists")
     }
 
     fun reset() {

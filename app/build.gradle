@@ -99,6 +99,9 @@ dependencies {
     // kotlin
     implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.8"
 
+    // logging
+    implementation 'com.jakewharton.timber:timber:5.0.1'
+
     // room
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"

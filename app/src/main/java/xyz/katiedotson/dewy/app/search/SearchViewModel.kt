@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import xyz.katiedotson.dewy.model.UserBook
 import javax.inject.Inject
 
@@ -28,10 +29,10 @@ class SearchViewModel @Inject constructor(
                         }
                     }
                     .onFailure { e ->
-                        println(e)
+                        Timber.e(e)
                     }
             }.onFailure {
-                println(it)
+                Timber.e(it)
             }
         }
     }

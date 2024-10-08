@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import timber.log.Timber
 import xyz.katiedotson.dewy.IoDispatcher
 import xyz.katiedotson.dewy.model.AuthorResult
 import xyz.katiedotson.dewy.model.BookSearchResult
@@ -187,7 +188,7 @@ class BookRepository @Inject constructor(
                             }
                             continuation.resume(Result.success(userSubjects))
                         } catch (e: JsonDataException) {
-                            println(e)
+                            Timber.e(e)
                             continuation.resume(Result.failure(e))
                         }
                     }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -59,7 +60,7 @@ class BookInputViewModel @Inject constructor(
                     )
                 }
             }.onFailure { e ->
-                println(e)
+                Timber.e(e)
             }
         }
         viewModelScope.launch {
@@ -78,7 +79,7 @@ class BookInputViewModel @Inject constructor(
                                 .toImmutableList()
                         }
                 }.onFailure { e ->
-                    println(e)
+                    Timber.e(e)
                 }
         }
     }
@@ -222,7 +223,7 @@ class BookInputViewModel @Inject constructor(
                     }
                 }
                 .onFailure { e ->
-                    println(e)
+                    Timber.e(e)
                     _events.update { current ->
                         current + Event.Error
                     }

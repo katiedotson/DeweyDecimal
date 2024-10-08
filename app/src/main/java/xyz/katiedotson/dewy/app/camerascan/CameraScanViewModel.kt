@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import xyz.katiedotson.dewy.model.BookSearchResult
 import xyz.katiedotson.dewy.model.key
 import xyz.katiedotson.dewy.service.book.BookRepository
@@ -34,7 +35,7 @@ internal class CameraScanViewModel @Inject constructor(
                     _state.update {
                         CameraScanState.Loading
                     }
-                    println("Sending ISBN: $isbn")
+                    Timber.d(message = "Sending ISBN: $isbn")
                     val result: Result<BookSearchResult> = bookRepository.getByIsbn(isbn)
                     result
                         .onSuccess { value ->
@@ -44,7 +45,7 @@ internal class CameraScanViewModel @Inject constructor(
                             }
                         }
                         .onFailure { e ->
-                            println(e)
+                            Timber.e(e)
                             _state.update {
                                 CameraScanState.MatchNotFound
                             }
@@ -92,7 +93,7 @@ internal class CameraScanViewModel @Inject constructor(
                     }
                 }
                 .onFailure {
-                    println("something went wrong with firebase")
+                    Timber.e(t = it, message = "Something went wrong with firebase")
                 }
         }
     }
