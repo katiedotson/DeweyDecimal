@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 
+@Suppress("AnnotationOnSeparateLine")
 @Composable
 fun DewyTextField(
     onValueChange: (String) -> Unit,
@@ -24,6 +25,7 @@ fun DewyTextField(
     modifier: Modifier = Modifier,
     label: String? = null,
     placeholder: String? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     errorText: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None
@@ -44,6 +46,7 @@ fun DewyTextField(
                 )
             }
         },
+        trailingIcon = trailingIcon,
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,

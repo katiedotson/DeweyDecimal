@@ -1,6 +1,5 @@
 package xyz.katiedotson.dewy.app.onboarding
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -8,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,6 +19,9 @@ class AuthViewModel @Inject constructor(
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unknown)
     val authState = _authState.asStateFlow()
+
+    private val _loading = MutableStateFlow(value = false)
+    val loading = _loading.asStateFlow()
 
     init {
         getUser()
@@ -35,13 +38,16 @@ class AuthViewModel @Inject constructor(
 
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
+            _loading.update { true }
             signInUseCase(email, password)
                 .onSuccess { _ ->
                     _authState.update {
                         AuthState.Authenticated
                     }
+                    _loading.update { false }
                 }.onFailure { failure ->
-                    Log.e("AuthViewModel", "sign in failed", failure)
+                    Timber.e(message = "sign in failed", failure)
+                    _loading.update { false }
                     _authState.update {
                         AuthState.Error
                     }
@@ -51,16 +57,19 @@ class AuthViewModel @Inject constructor(
 
     fun createAccount(email: String, password: String) {
         viewModelScope.launch {
+            _loading.update { true }
             createAccountUseCase(email, password)
                 .onSuccess { _ ->
                     _authState.update {
                         AuthState.Authenticated
                     }
+                    _loading.update { false }
                 }.onFailure { failure ->
-                    Log.e("AuthViewModel", "create account failed", failure)
+                    Timber.e(message = "create account failed", failure)
                     _authState.update {
                         AuthState.Error
                     }
+                    _loading.update { false }
                 }
         }
     }
