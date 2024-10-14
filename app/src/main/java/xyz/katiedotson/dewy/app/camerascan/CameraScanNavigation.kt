@@ -69,6 +69,7 @@ fun NavGraphBuilder.cameraScanScreen(
 }
 
 internal data class CameraScanViewState(
+    val isLoading: Boolean,
     val onTextDetected: (DetectedText) -> Unit,
     val onBottomSheetDismissed: () -> Unit,
     val onBookResultConfirmed: () -> Unit,
@@ -92,6 +93,7 @@ internal fun mapCameraScanViewState(
 ): CameraScanViewState {
     val bottomSheetState = mapBottomSheetState(vmState)
     return CameraScanViewState(
+        isLoading = vmState is CameraScanState.Loading,
         bottomSheetState = bottomSheetState,
         onTextDetected = onTextDetected,
         onBottomSheetDismissed = onBottomSheetDismissed,

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import xyz.katiedotson.dewy.ui.component.Loader
 import xyz.katiedotson.dewy.ui.theme.AppTypography
 import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 
@@ -39,6 +40,7 @@ internal fun CameraScanScreen(
     val cameraController = buildCameraController(viewState.onTextDetected)
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
+    Loader(isVisible = viewState.isLoading)
     Column(
         modifier = Modifier.fillMaxSize()
     ) {

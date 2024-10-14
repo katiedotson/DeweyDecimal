@@ -2,12 +2,14 @@ package xyz.katiedotson.dewy.app.manualentry
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -131,6 +134,8 @@ private fun ManualEntryScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
                 .padding(bottom = 24.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             MainContent(
                 viewState = viewState
@@ -167,7 +172,7 @@ private fun BottomSheetContent(
             .fillMaxWidth()
             .padding(all = 12.dp)
             .padding(bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (bottomSheetState is BottomSheetState.MatchNotFound) {
             Text(bottomSheetState.heading, style = AppTypography.headlineMedium)
@@ -226,7 +231,7 @@ internal sealed class BottomSheetState {
 }
 
 @Composable
-private fun MainContent(
+private fun ColumnScope.MainContent(
     viewState: ManualEntryScreenState,
 ) {
     var isbnValue by remember { mutableStateOf(value = "") }
@@ -237,6 +242,7 @@ private fun MainContent(
     DewyTextField(
         label = "ISBN",
         modifier = Modifier
+            .widthIn(max = 400.dp)
             .fillMaxWidth()
             .padding(bottom = 16.dp),
         value = isbnValue,
@@ -247,11 +253,13 @@ private fun MainContent(
         isError = viewState.isbnError != null,
         errorText = viewState.isbnError,
     )
+    Spacer(modifier = Modifier.weight(1f))
     Button(
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.inverseSurface
         ),
         modifier = Modifier
+            .widthIn(max = 400.dp)
             .fillMaxWidth()
             .padding(top = 24.dp),
         onClick = { viewState.onSubmit(isbnValue) },
@@ -269,17 +277,20 @@ private fun Heading(
     heading: String,
     onBackClicked: () -> Unit
 ) {
-    IconButton(
-        onBackClicked,
-        modifier = Modifier
-            .padding(bottom = 24.dp)
-            .size(48.dp)
-    ) {
-        Icon(
-            modifier = Modifier.fillMaxSize(),
-            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-            contentDescription = null
-        )
+    Row {
+        IconButton(
+            onBackClicked,
+            modifier = Modifier
+                .padding(bottom = 24.dp)
+                .size(32.dp)
+        ) {
+            Icon(
+                modifier = Modifier.fillMaxSize(),
+                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                contentDescription = null
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
     }
     Text(
         modifier = Modifier.padding(bottom = 8.dp),

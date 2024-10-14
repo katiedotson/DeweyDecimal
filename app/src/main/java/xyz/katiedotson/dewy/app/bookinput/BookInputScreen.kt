@@ -155,7 +155,7 @@ private fun Heading(
         onBackClicked,
         modifier = Modifier
             .padding(bottom = 24.dp)
-            .size(48.dp)
+            .size(32.dp)
     ) {
         Icon(
             modifier = Modifier.fillMaxSize(),
