@@ -13,6 +13,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
+import xyz.katiedotson.dewy.ui.SearchResultBottomSheetState
 
 private const val AnimationDuration = 300
 
@@ -71,17 +72,10 @@ fun NavGraphBuilder.cameraScanScreen(
 internal data class CameraScanViewState(
     val isLoading: Boolean,
     val onTextDetected: (DetectedText) -> Unit,
-    val onBottomSheetDismissed: () -> Unit,
-    val onBookResultConfirmed: () -> Unit,
-    val onGoToManualEntry: () -> Unit,
     val showSheet: Boolean,
-    val bottomSheetState: BottomSheetState?,
+    val bottomSheetState: SearchResultBottomSheetState?,
+    val goToManualEntry: () -> Unit,
 )
-
-internal sealed class BottomSheetState {
-    data class MatchFound(val heading: String, val title: String, val author: String) : BottomSheetState()
-    data class MatchNotFound(val heading: String) : BottomSheetState()
-}
 
 @Composable
 internal fun mapCameraScanViewState(
@@ -91,38 +85,45 @@ internal fun mapCameraScanViewState(
     onConfirmBookResult: () -> Unit,
     onGoToManualEntry: () -> Unit,
 ): CameraScanViewState {
-    val bottomSheetState = mapBottomSheetState(vmState)
+    val bottomSheetState = mapBottomSheetState(vmState, onBottomSheetDismissed, onConfirmBookResult, onGoToManualEntry)
     return CameraScanViewState(
         isLoading = vmState is CameraScanState.Loading,
         bottomSheetState = bottomSheetState,
         onTextDetected = onTextDetected,
-        onBottomSheetDismissed = onBottomSheetDismissed,
         showSheet = bottomSheetState != null,
-        onBookResultConfirmed = onConfirmBookResult,
-        onGoToManualEntry = onGoToManualEntry,
+        goToManualEntry = onGoToManualEntry,
     )
 }
 
 @Composable
-internal fun mapBottomSheetState(vmState: CameraScanState): BottomSheetState? {
+internal fun mapBottomSheetState(
+    vmState: CameraScanState,
+    onBottomSheetDismissed: () -> Unit,
+    onConfirmBookResult: () -> Unit,
+    onGoToManualEntry: () -> Unit
+): SearchResultBottomSheetState? {
     return when (vmState) {
         CameraScanState.Loading,
         CameraScanState.Scanning -> null
 
         is CameraScanState.MatchFound -> {
-            BottomSheetState.MatchFound(
+            SearchResultBottomSheetState.MatchFound(
                 heading = "Result Found",
                 title = vmState.match.title,
                 author = vmState.match.authors.joinToString(
                     limit = 4
                 ) {
                     it.fullName
-                }
+                },
+                onMatchConfirmed = onConfirmBookResult,
+                onBottomSheetDismissed = onBottomSheetDismissed,
             )
         }
         CameraScanState.MatchNotFound -> {
-            BottomSheetState.MatchNotFound(
-                heading = "No Results Found"
+            SearchResultBottomSheetState.MatchNotFound(
+                heading = "No Results Found",
+                onBottomSheetDismissed = onBottomSheetDismissed,
+                onTryManually = onGoToManualEntry,
             )
         }
     }

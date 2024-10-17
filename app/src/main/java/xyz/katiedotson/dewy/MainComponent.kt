@@ -40,6 +40,7 @@ fun MainComponent() {
                 )
                 searchScreen(
                     onNavigateToCameraScan = navController::navigateToCameraScanScreen,
+                    onNavigateToManualEntry = navController::navigateToManualEntry,
                     snackbarHostState = snackbarHostState
                 )
                 cameraScanScreen(
