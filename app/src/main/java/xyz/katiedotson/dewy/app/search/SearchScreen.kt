@@ -13,16 +13,13 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
@@ -67,8 +64,10 @@ import xyz.katiedotson.dewy.ui.theme.DeweyDecimalTheme
 internal fun SearchScreen(
     onNavigateToCameraScanScreen: () -> Unit,
     onNavigateToManualEntryScreen: () -> Unit,
+    onNavigateToBookScreen: (UserBook) -> Unit,
     snackbarHostState: SnackbarHostState,
-    savedBookTitle: String?
+    savedBookTitle: String?,
+    onSavedBookSnackDismissed: () -> Unit,
 ) {
     val permissionsViewModel: PermissionsViewModel = hiltViewModel()
     val searchViewModel: SearchViewModel = hiltViewModel()
@@ -100,11 +99,18 @@ internal fun SearchScreen(
 
     LaunchedEffect(savedBookTitle) {
         if (savedBookTitle != null) {
-            snackbarHostState.showSnackbar(
+            val result = snackbarHostState.showSnackbar(
                 message = "$savedBookTitle was successfully saved to your library.",
                 withDismissAction = true
             )
+            result.also {
+                onSavedBookSnackDismissed()
+            }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        searchViewModel.loadBooks()
     }
 
     Loader(isVisible = isLoading)
@@ -119,7 +125,7 @@ internal fun SearchScreen(
             )
         },
         onAddManuallyPressed = onNavigateToManualEntryScreen,
-        onBookClicked = {}
+        onBookClicked = onNavigateToBookScreen,
     )
 }
 
@@ -173,6 +179,7 @@ private fun ScreenContent(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
+@Suppress("LongMethod")
 private fun BookCard(book: UserBook, onBookClicked: (UserBook) -> Unit) {
     Card(
         shape = MaterialTheme.shapes.small,
@@ -218,7 +225,10 @@ private fun BookCard(book: UserBook, onBookClicked: (UserBook) -> Unit) {
             Spacer(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 24.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = 24.dp)
+            ) {
                 book.subjects.forEach {
                     Text(
                         modifier = Modifier
@@ -263,6 +273,7 @@ private fun BookCardPreview() {
 @Composable
 @PreviewLightDark
 @PreviewScreenSizes
+@Suppress("LongMethod")
 private fun SearchScreenPreviewDark() {
     DeweyDecimalTheme {
         Surface {

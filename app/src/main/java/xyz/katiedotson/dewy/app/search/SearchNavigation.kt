@@ -19,16 +19,25 @@ fun NavController.navigateToSearchScreen() {
 fun NavGraphBuilder.searchScreen(
     onNavigateToCameraScan: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
+    onNavigateToBookScreen: (String) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     composable<SearchRoute> { backStackEntry ->
         SearchScreen(
             onNavigateToCameraScanScreen = onNavigateToCameraScan,
             onNavigateToManualEntryScreen = onNavigateToManualEntry,
+            onNavigateToBookScreen = {
+                onNavigateToBookScreen(it.key)
+            },
             snackbarHostState = snackbarHostState,
-            savedBookTitle = backStackEntry.savedStateHandle.get<String>("SavedBookTitle")
+            savedBookTitle = backStackEntry.savedStateHandle.get<String>(SavedBookTitleKey),
+            onSavedBookSnackDismissed = {
+                backStackEntry.savedStateHandle.remove<String?>(SavedBookTitleKey)
+            },
         )
     }
 }
 
 @Serializable data object SearchRoute
+
+internal const val SavedBookTitleKey = "SavedBookTitle"

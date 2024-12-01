@@ -155,6 +155,38 @@ class BookRepository @Inject constructor(
         }
     }
 
+    suspend fun getUserBook(bookKey: String, userId: String): Result<UserBook> = withContext(dispatcher) {
+        return@withContext suspendCancellableCoroutine { continuation ->
+            runCatching {
+                Firebase.firestore.collection("user_books")
+                    .whereEqualTo("userId", userId)
+                    .whereEqualTo("key", bookKey)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        try {
+                            val userBooks = result.documents.mapNotNull {
+                                userBookAdapter.fromJson(JSONObject(it.data!!).toString())
+                            }
+                            check(userBooks.size == 1)
+                            continuation.resume(Result.success(userBooks.first()))
+                        } catch (t: JsonDataException) {
+                            continuation.resume(Result.failure(t))
+                        } catch (illegalStateException: IllegalStateException) {
+                            continuation.resume(Result.failure(illegalStateException))
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        continuation.resume(Result.failure(e))
+                    }
+                    .addOnCanceledListener {
+                        continuation.cancel(cause = null)
+                    }
+            }.onFailure {
+                continuation.resume(Result.failure(it))
+            }
+        }
+    }
+
     suspend fun saveSubjectForUser(userSubject: UserSubject): Result<String> = withContext(dispatcher) {
         return@withContext suspendCancellableCoroutine { continuation ->
             runCatching {

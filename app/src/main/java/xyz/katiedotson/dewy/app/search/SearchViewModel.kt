@@ -23,6 +23,10 @@ class SearchViewModel @Inject constructor(
     val loading = _loading.asStateFlow()
 
     init {
+        loadBooks()
+    }
+
+    fun loadBooks() {
         viewModelScope.launch {
             _loading.update {
                 true

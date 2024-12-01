@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import xyz.katiedotson.dewy.app.bookinput.bookInputScreen
 import xyz.katiedotson.dewy.app.bookinput.navigateToBookInputScreen
+import xyz.katiedotson.dewy.app.bookview.bookViewScreen
+import xyz.katiedotson.dewy.app.bookview.navigateToBookViewScreen
 import xyz.katiedotson.dewy.app.camerascan.cameraScanScreen
 import xyz.katiedotson.dewy.app.camerascan.navigateToCameraScanScreen
 import xyz.katiedotson.dewy.app.manualentry.manualEntryScreen
@@ -41,6 +43,7 @@ fun MainComponent() {
                 searchScreen(
                     onNavigateToCameraScan = navController::navigateToCameraScanScreen,
                     onNavigateToManualEntry = navController::navigateToManualEntry,
+                    onNavigateToBookScreen = navController::navigateToBookViewScreen,
                     snackbarHostState = snackbarHostState
                 )
                 cameraScanScreen(
@@ -68,6 +71,9 @@ fun MainComponent() {
                             }
                     },
                     snackbarHostState = snackbarHostState
+                )
+                bookViewScreen(
+                    onNavigateBack = navController::popBackStack,
                 )
             }
         }
