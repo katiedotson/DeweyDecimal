@@ -100,7 +100,7 @@ fun SearchResultBottomSheetContent(
                 Button(
                     onClick = bottomSheetState.onMatchConfirmed
                 ) {
-                    Text(text = "Confirm", style = AppTypography.labelLarge)
+                    Text(text = bottomSheetState.confirmationButtonText, style = AppTypography.labelLarge)
                 }
             }
         }
@@ -114,6 +114,7 @@ sealed class SearchResultBottomSheetState(
         val heading: String,
         val title: String,
         val author: String,
+        val confirmationButtonText: String,
         val onMatchConfirmed: () -> Unit,
         override val onBottomSheetDismissed: () -> Unit,
     ) : SearchResultBottomSheetState(onBottomSheetDismissed)
@@ -136,6 +137,7 @@ fun PreviewSearchResultBottomSheetMatchFound() {
                     title = "Paradise Lost",
                     author = "John Milton",
                     onBottomSheetDismissed = {},
+                    confirmationButtonText = "Confirm",
                     onMatchConfirmed = {},
                 ),
                 scope = rememberCoroutineScope(),

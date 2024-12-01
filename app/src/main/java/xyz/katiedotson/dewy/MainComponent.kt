@@ -49,6 +49,7 @@ fun MainComponent() {
                 cameraScanScreen(
                     onNavigateBack = navController::popBackStack,
                     onNavigateToBookInput = navController::navigateToBookInputScreen,
+                    onNavigateToBookView = navController::navigateToBookViewScreen,
                     onNavigateToManualEntry = {
                         navController.navigateToManualEntry {
                             popUpTo(SearchRoute)
@@ -58,6 +59,7 @@ fun MainComponent() {
                 manualEntryScreen(
                     onNavigateBack = navController::popBackStack,
                     onNavigateToBookInput = navController::navigateToBookInputScreen,
+                    onViewBook = navController::navigateToBookViewScreen,
                 )
                 bookInputScreen(
                     onNavigateBack = navController::popBackStack,

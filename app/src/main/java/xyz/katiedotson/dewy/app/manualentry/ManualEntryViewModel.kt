@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import xyz.katiedotson.dewy.app.camerascan.GetBookResult
+import xyz.katiedotson.dewy.app.camerascan.GetBookResultUseCase
 import xyz.katiedotson.dewy.model.BookSearchResult
 import xyz.katiedotson.dewy.model.key
 import xyz.katiedotson.dewy.service.book.BookRepository
@@ -15,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ManualEntryViewModel @Inject constructor(
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val getBookResult: GetBookResultUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ManualEntryState>(ManualEntryState.Default)
@@ -38,11 +41,20 @@ class ManualEntryViewModel @Inject constructor(
             true
         }
         viewModelScope.launch {
-            val result: Result<BookSearchResult> = bookRepository.getByIsbn(isbn)
-            result
+            getBookResult(isbn)
                 .onSuccess { value ->
-                    _state.update {
-                        ManualEntryState.MatchFound(match = value)
+                    when (value) {
+                        is GetBookResult.BookFound -> {
+                            _state.update {
+                                ManualEntryState.MatchFound(match = value.bookSearchResult)
+                            }
+                        }
+
+                        is GetBookResult.BookAlreadySaved -> {
+                            _state.update {
+                                ManualEntryState.MatchAlreadySaved(match = value.bookSearchResult)
+                            }
+                        }
                     }
                 }
                 .onFailure { e ->
@@ -104,5 +116,6 @@ sealed class ManualEntryState {
     data object Default : ManualEntryState()
     data object FieldError : ManualEntryState()
     data class MatchFound(val match: BookSearchResult) : ManualEntryState()
+    data class MatchAlreadySaved(val match: BookSearchResult) : ManualEntryState()
     data object MatchNotFound : ManualEntryState()
 }

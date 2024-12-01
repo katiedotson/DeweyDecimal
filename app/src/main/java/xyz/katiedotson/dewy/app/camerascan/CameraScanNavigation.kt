@@ -13,6 +13,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
+import xyz.katiedotson.dewy.model.key
 import xyz.katiedotson.dewy.ui.SearchResultBottomSheetState
 
 private const val AnimationDuration = 300
@@ -27,6 +28,7 @@ fun NavController.navigateToCameraScanScreen(
 
 fun NavGraphBuilder.cameraScanScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToBookView: (String) -> Unit,
     onNavigateToBookInput: (String) -> Unit,
     onNavigateToManualEntry: () -> Unit,
 ) {
@@ -64,6 +66,7 @@ fun NavGraphBuilder.cameraScanScreen(
             onBottomSheetDismissed = cameraScanViewModel::unpause,
             onConfirmBookResult = cameraScanViewModel::onBookResultConfirmed,
             onGoToManualEntry = onNavigateToManualEntry,
+            onViewBook = onNavigateToBookView,
         )
         CameraScanScreen(
             viewState = viewState
@@ -88,8 +91,15 @@ internal fun mapCameraScanViewState(
     onBottomSheetDismissed: () -> Unit,
     onConfirmBookResult: () -> Unit,
     onGoToManualEntry: () -> Unit,
+    onViewBook: (String) -> Unit
 ): CameraScanViewState {
-    val bottomSheetState = mapBottomSheetState(vmState, onBottomSheetDismissed, onConfirmBookResult, onGoToManualEntry)
+    val bottomSheetState = mapBottomSheetState(
+        vmState,
+        onBottomSheetDismissed,
+        onConfirmBookResult,
+        onGoToManualEntry,
+        onViewBook
+    )
     return CameraScanViewState(
         onBackClicked = onBackClicked,
         isLoading = vmState is CameraScanState.Loading,
@@ -105,7 +115,8 @@ internal fun mapBottomSheetState(
     vmState: CameraScanState,
     onBottomSheetDismissed: () -> Unit,
     onConfirmBookResult: () -> Unit,
-    onGoToManualEntry: () -> Unit
+    onGoToManualEntry: () -> Unit,
+    onViewBook: (String) -> Unit,
 ): SearchResultBottomSheetState? {
     return when (vmState) {
         CameraScanState.Loading,
@@ -120,7 +131,20 @@ internal fun mapBottomSheetState(
                 ) {
                     it.fullName
                 },
+                confirmationButtonText = "Confirm",
                 onMatchConfirmed = onConfirmBookResult,
+                onBottomSheetDismissed = onBottomSheetDismissed,
+            )
+        }
+        is CameraScanState.MatchAlreadySaved -> {
+            SearchResultBottomSheetState.MatchFound(
+                heading = "Book is Already Saved",
+                title = vmState.match.title,
+                author = vmState.match.authors.joinToString(limit = 4) {
+                    it.fullName
+                },
+                confirmationButtonText = "View",
+                onMatchConfirmed = { onViewBook(vmState.match.key) },
                 onBottomSheetDismissed = onBottomSheetDismissed,
             )
         }

@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
+import xyz.katiedotson.dewy.model.key
 import xyz.katiedotson.dewy.ui.SearchResultBottomSheetState
 
 fun NavController.navigateToManualEntry(navOptions: NavOptionsBuilder.() -> Unit = {}) = navigate(
@@ -26,6 +27,7 @@ fun NavController.navigateToManualEntry(navOptions: NavOptionsBuilder.() -> Unit
 fun NavGraphBuilder.manualEntryScreen(
     onNavigateBack: () -> Unit,
     onNavigateToBookInput: (String) -> Unit,
+    onViewBook: (String) -> Unit,
 ) {
     composable<ManualEntryRoute> {
         val viewModel: ManualEntryViewModel = hiltViewModel()
@@ -68,8 +70,22 @@ fun NavGraphBuilder.manualEntryScreen(
                 is ManualEntryState.MatchFound -> SearchResultBottomSheetState.MatchFound(
                     heading = "Match Found",
                     title = s.match.title,
-                    author = s.match.authors.joinToString { it.fullName },
+                    author = s.match.authors.joinToString(limit = 4) {
+                        it.fullName
+                    },
+                    confirmationButtonText = "Confirm",
                     onMatchConfirmed = viewModel::bookResultConfirmed,
+                    onBottomSheetDismissed = viewModel::reset,
+                )
+
+                is ManualEntryState.MatchAlreadySaved -> SearchResultBottomSheetState.MatchFound(
+                    heading = "Book is Already Saved",
+                    title = s.match.title,
+                    author = s.match.authors.joinToString(limit = 4) {
+                        it.fullName
+                    },
+                    confirmationButtonText = "View",
+                    onMatchConfirmed = { onViewBook(s.match.key) },
                     onBottomSheetDismissed = viewModel::reset,
                 )
             },

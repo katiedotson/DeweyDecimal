@@ -16,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 internal class CameraScanViewModel @Inject constructor(
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val getBookResult: GetBookResultUseCase,
 ) : ViewModel() {
     private var _match: BookSearchResult? = null
     private val _isbn = MutableStateFlow<String?>(value = null)
@@ -36,12 +37,21 @@ internal class CameraScanViewModel @Inject constructor(
                         CameraScanState.Loading
                     }
                     Timber.d(message = "Sending ISBN: $isbn")
-                    val result: Result<BookSearchResult> = bookRepository.getByIsbn(isbn)
+                    val result = getBookResult(isbn)
                     result
                         .onSuccess { value ->
-                            _match = value
-                            _state.update {
-                                CameraScanState.MatchFound(match = value)
+                            when (value) {
+                                is GetBookResult.BookFound -> {
+                                    _match = value.bookSearchResult
+                                    _state.update {
+                                        CameraScanState.MatchFound(match = value.bookSearchResult)
+                                    }
+                                }
+                                is GetBookResult.BookAlreadySaved -> {
+                                    _state.update {
+                                        CameraScanState.MatchAlreadySaved(match = value.bookSearchResult)
+                                    }
+                                }
                             }
                         }
                         .onFailure { e ->
@@ -109,6 +119,7 @@ internal sealed class CameraScanState {
     data object Scanning : CameraScanState()
     data object Loading : CameraScanState()
     data class MatchFound(val match: BookSearchResult) : CameraScanState()
+    data class MatchAlreadySaved(val match: BookSearchResult) : CameraScanState()
     data object MatchNotFound : CameraScanState()
 }
 
