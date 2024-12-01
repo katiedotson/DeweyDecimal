@@ -10,9 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -49,13 +50,24 @@ internal fun CameraScanScreen(
                     }
                 }
             )
+            FilledIconButton(
+                onClick = viewState.onBackClicked,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(24.dp),
+            ) {
+                Icon(imageVector = Icons.Default.Clear, contentDescription = null)
+            }
             Button(
                 onClick = viewState.goToManualEntry,
                 modifier = Modifier.align(Alignment.TopEnd).padding(24.dp)
             ) {
                 Text(text = "Search Manually")
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null
+                )
             }
             if (viewState.bottomSheetState != null) {
                 ModalBottomSheet(

@@ -21,6 +21,9 @@ class ManualEntryViewModel @Inject constructor(
     private val _state = MutableStateFlow<ManualEntryState>(ManualEntryState.Default)
     val state = _state.asStateFlow()
 
+    private val _loading = MutableStateFlow(value = false)
+    val loading = _loading.asStateFlow()
+
     private val _events = MutableStateFlow<List<Event>>(listOf())
     val events = _events.asStateFlow()
 
@@ -30,6 +33,9 @@ class ManualEntryViewModel @Inject constructor(
                 ManualEntryState.FieldError
             }
             return
+        }
+        _loading.update {
+            true
         }
         viewModelScope.launch {
             val result: Result<BookSearchResult> = bookRepository.getByIsbn(isbn)
@@ -44,6 +50,10 @@ class ManualEntryViewModel @Inject constructor(
                     _state.update {
                         ManualEntryState.MatchNotFound
                     }
+                }.also {
+                    _loading.update {
+                        false
+                    }
                 }
         }
     }
@@ -52,6 +62,9 @@ class ManualEntryViewModel @Inject constructor(
         (_state.value as? ManualEntryState.MatchFound)?.let {
             val match = it.match
             viewModelScope.launch {
+                _loading.update {
+                    true
+                }
                 bookRepository.saveBookResult(match)
                     .onSuccess {
                         _events.update { events ->
@@ -59,6 +72,10 @@ class ManualEntryViewModel @Inject constructor(
                         }
                     }.onFailure { e ->
                         Timber.e(t = e, message = "something went wrong with firebase")
+                    }.also {
+                        _loading.update {
+                            false
+                        }
                     }
             }
             return

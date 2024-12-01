@@ -9,6 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import xyz.katiedotson.dewy.IoDispatcher
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -75,23 +76,28 @@ class AuthServiceImpl @Inject constructor(
 
     override suspend fun createAccount(email: String, password: String): Result<DewyUser> = withContext(dispatcher) {
         return@withContext suspendCancellableCoroutine { continuation ->
-            Firebase.auth.createUserWithEmailAndPassword(email.trim(), password)
-                .addOnSuccessListener { authResult ->
-                    authResult.user?.uid?.let { userId ->
-                        continuation.resume(
-                            Result.success(
-                                DewyUser(
-                                    email = email,
-                                    userId = userId
+            try {
+                Firebase.auth.createUserWithEmailAndPassword(email.trim(), password)
+                    .addOnSuccessListener { authResult ->
+                        authResult.user?.uid?.let { userId ->
+                            continuation.resume(
+                                Result.success(
+                                    DewyUser(
+                                        email = email,
+                                        userId = userId
+                                    )
                                 )
                             )
-                        )
-                    } ?: continuation.resume(Result.failure(Throwable("No User Id")))
-                }.addOnFailureListener { e ->
-                    continuation.resume(Result.failure(e))
-                }.addOnCanceledListener {
-                    continuation.cancel(cause = null)
-                }
+                        } ?: continuation.resume(Result.failure(Throwable("No User Id")))
+                    }.addOnFailureListener { e ->
+                        continuation.resume(Result.failure(e))
+                    }.addOnCanceledListener {
+                        continuation.cancel(cause = null)
+                    }
+            } catch (t: Throwable) {
+                Timber.e(t)
+                continuation.resume(Result.failure(t))
+            }
         }
     }
 }

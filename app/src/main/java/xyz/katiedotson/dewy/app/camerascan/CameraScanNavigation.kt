@@ -26,6 +26,7 @@ fun NavController.navigateToCameraScanScreen(
 }
 
 fun NavGraphBuilder.cameraScanScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToBookInput: (String) -> Unit,
     onNavigateToManualEntry: () -> Unit,
 ) {
@@ -58,6 +59,7 @@ fun NavGraphBuilder.cameraScanScreen(
 
         val viewState = mapCameraScanViewState(
             vmState = vmState,
+            onBackClicked = onNavigateBack,
             onTextDetected = cameraScanViewModel::textDetected,
             onBottomSheetDismissed = cameraScanViewModel::unpause,
             onConfirmBookResult = cameraScanViewModel::onBookResultConfirmed,
@@ -70,6 +72,7 @@ fun NavGraphBuilder.cameraScanScreen(
 }
 
 internal data class CameraScanViewState(
+    val onBackClicked: () -> Unit,
     val isLoading: Boolean,
     val onTextDetected: (DetectedText) -> Unit,
     val showSheet: Boolean,
@@ -80,6 +83,7 @@ internal data class CameraScanViewState(
 @Composable
 internal fun mapCameraScanViewState(
     vmState: CameraScanState,
+    onBackClicked: () -> Unit,
     onTextDetected: (DetectedText) -> Unit,
     onBottomSheetDismissed: () -> Unit,
     onConfirmBookResult: () -> Unit,
@@ -87,6 +91,7 @@ internal fun mapCameraScanViewState(
 ): CameraScanViewState {
     val bottomSheetState = mapBottomSheetState(vmState, onBottomSheetDismissed, onConfirmBookResult, onGoToManualEntry)
     return CameraScanViewState(
+        onBackClicked = onBackClicked,
         isLoading = vmState is CameraScanState.Loading,
         bottomSheetState = bottomSheetState,
         onTextDetected = onTextDetected,

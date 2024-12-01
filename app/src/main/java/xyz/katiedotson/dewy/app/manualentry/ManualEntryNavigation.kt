@@ -31,6 +31,7 @@ fun NavGraphBuilder.manualEntryScreen(
         val viewModel: ManualEntryViewModel = hiltViewModel()
         val vmState by viewModel.state.collectAsStateWithLifecycle()
         val events by viewModel.events.collectAsStateWithLifecycle()
+        val loading by viewModel.loading.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
         LaunchedEffect(events) {
@@ -46,6 +47,7 @@ fun NavGraphBuilder.manualEntryScreen(
         }
 
         val viewState = ManualEntryScreenState(
+            loading = loading,
             onNavigateBack = onNavigateBack,
             heading = "Enter the ISBN",
             isbnError = when (vmState) {
@@ -82,6 +84,7 @@ fun NavGraphBuilder.manualEntryScreen(
 }
 
 internal data class ManualEntryScreenState(
+    val loading: Boolean,
     val onNavigateBack: () -> Unit,
     val heading: String,
     val isbnError: String?,

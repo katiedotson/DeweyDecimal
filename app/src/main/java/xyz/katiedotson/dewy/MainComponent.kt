@@ -44,6 +44,7 @@ fun MainComponent() {
                     snackbarHostState = snackbarHostState
                 )
                 cameraScanScreen(
+                    onNavigateBack = navController::popBackStack,
                     onNavigateToBookInput = navController::navigateToBookInputScreen,
                     onNavigateToManualEntry = {
                         navController.navigateToManualEntry {

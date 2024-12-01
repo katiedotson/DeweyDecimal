@@ -40,6 +40,7 @@ import androidx.core.text.isDigitsOnly
 import kotlinx.coroutines.CoroutineScope
 import xyz.katiedotson.dewy.ui.SearchResultBottomSheetContent
 import xyz.katiedotson.dewy.ui.component.DewyTextField
+import xyz.katiedotson.dewy.ui.component.Loader
 import xyz.katiedotson.dewy.ui.theme.AppTypography
 
 private const val MaxIsbnLength = 13
@@ -54,6 +55,7 @@ internal fun ManualEntryScreen(
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
+        Loader(viewState.loading)
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -157,6 +159,7 @@ private fun Heading(
 fun ManualEntryScreenPreview() {
     ManualEntryScreen(
         viewState = ManualEntryScreenState(
+            loading = false,
             heading = "Enter the ISBN",
             onNavigateBack = {},
             submitButtonText = "Search",
