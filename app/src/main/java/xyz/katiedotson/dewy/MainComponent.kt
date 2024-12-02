@@ -16,6 +16,8 @@ import xyz.katiedotson.dewy.app.bookview.bookViewScreen
 import xyz.katiedotson.dewy.app.bookview.navigateToBookViewScreen
 import xyz.katiedotson.dewy.app.camerascan.cameraScanScreen
 import xyz.katiedotson.dewy.app.camerascan.navigateToCameraScanScreen
+import xyz.katiedotson.dewy.app.librarysettings.librarySettingsScreen
+import xyz.katiedotson.dewy.app.librarysettings.navigateToLibrarySettings
 import xyz.katiedotson.dewy.app.manualentry.manualEntryScreen
 import xyz.katiedotson.dewy.app.manualentry.navigateToManualEntry
 import xyz.katiedotson.dewy.app.onboarding.OnboardingRoute
@@ -23,6 +25,8 @@ import xyz.katiedotson.dewy.app.onboarding.onboardingScreen
 import xyz.katiedotson.dewy.app.search.SearchRoute
 import xyz.katiedotson.dewy.app.search.navigateToSearchScreen
 import xyz.katiedotson.dewy.app.search.searchScreen
+import xyz.katiedotson.dewy.app.searchsettings.navigateToSearchSettings
+import xyz.katiedotson.dewy.app.searchsettings.searchSettingsScreen
 
 @Composable
 fun MainComponent() {
@@ -44,6 +48,8 @@ fun MainComponent() {
                     onNavigateToCameraScan = navController::navigateToCameraScanScreen,
                     onNavigateToManualEntry = navController::navigateToManualEntry,
                     onNavigateToBookScreen = navController::navigateToBookViewScreen,
+                    onNavigateToSettings = navController::navigateToLibrarySettings,
+                    onNavigateToSearchSettings = navController::navigateToSearchSettings,
                     snackbarHostState = snackbarHostState
                 )
                 cameraScanScreen(
@@ -75,6 +81,12 @@ fun MainComponent() {
                     snackbarHostState = snackbarHostState
                 )
                 bookViewScreen(
+                    onNavigateBack = navController::popBackStack,
+                )
+                librarySettingsScreen(
+                    onNavigateBack = navController::popBackStack,
+                )
+                searchSettingsScreen(
                     onNavigateBack = navController::popBackStack,
                 )
             }

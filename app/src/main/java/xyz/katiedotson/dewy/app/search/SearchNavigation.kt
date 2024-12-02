@@ -20,6 +20,8 @@ fun NavGraphBuilder.searchScreen(
     onNavigateToCameraScan: () -> Unit,
     onNavigateToManualEntry: () -> Unit,
     onNavigateToBookScreen: (String) -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearchSettings: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     composable<SearchRoute> { backStackEntry ->
@@ -34,6 +36,8 @@ fun NavGraphBuilder.searchScreen(
             onSavedBookSnackDismissed = {
                 backStackEntry.savedStateHandle.remove<String?>(SavedBookTitleKey)
             },
+            onNavigateToSettings = onNavigateToSettings,
+            onNavigateToSearchSettings = onNavigateToSearchSettings,
         )
     }
 }

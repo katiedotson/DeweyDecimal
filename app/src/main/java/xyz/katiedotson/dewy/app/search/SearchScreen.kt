@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +22,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
@@ -27,7 +31,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,6 +72,8 @@ internal fun SearchScreen(
     snackbarHostState: SnackbarHostState,
     savedBookTitle: String?,
     onSavedBookSnackDismissed: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearchSettings: () -> Unit,
 ) {
     val permissionsViewModel: PermissionsViewModel = hiltViewModel()
     val searchViewModel: SearchViewModel = hiltViewModel()
@@ -126,6 +132,8 @@ internal fun SearchScreen(
         },
         onAddManuallyPressed = onNavigateToManualEntryScreen,
         onBookClicked = onNavigateToBookScreen,
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToSearchSettings = onNavigateToSearchSettings,
     )
 }
 
@@ -137,41 +145,67 @@ private fun ScreenContent(
     onAddWithCameraPressed: () -> Unit,
     onAddManuallyPressed: () -> Unit,
     onBookClicked: (UserBook) -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearchSettings: () -> Unit,
 ) {
-    Surface {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Column {
-                TopAppBar(
-                    title = {
-                        Text(text = "Your Books")
-                    }
-                )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "Your Library")
+                }
+            )
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                IconButton(
+                    onClick = onAddManuallyPressed,
+                ) {
+                    Icon(imageVector = Icons.Filled.Add, contentDescription = "Add new manually")
+                }
+                IconButton(
+                    onClick = onAddWithCameraPressed,
+                    modifier = Modifier
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.camera_add),
+                        contentDescription = "Add new with camera"
+                    )
+                }
+                IconButton(
+                    onClick = onNavigateToSettings,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings"
+                    )
+                }
+                IconButton(
+                    onClick = onNavigateToSearchSettings,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search",
+                    )
+                }
+            }
+        }
+    ) {
+        Surface {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            ) {
                 Column(modifier = Modifier.verticalScroll(scrollState)) {
                     books.forEach {
                         BookCard(it, onBookClicked)
                     }
                     Spacer(modifier = Modifier.height(100.dp))
                 }
-            }
-            OutlinedIconButton(
-                onClick = onAddManuallyPressed,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(20.dp)
-                    .padding(bottom = 50.dp),
-            ) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add new manually")
-            }
-            OutlinedIconButton(
-                onClick = onAddWithCameraPressed,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(20.dp),
-            ) {
-                Icon(painter = painterResource(R.drawable.camera_add), contentDescription = "Add new with camera")
             }
         }
     }
@@ -234,12 +268,11 @@ private fun BookCard(book: UserBook, onBookClicked: (UserBook) -> Unit) {
                         modifier = Modifier
                             .padding(vertical = 4.dp)
                             .background(
-                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                color = MaterialTheme.colorScheme.inversePrimary,
                                 shape = FilterChipDefaults.shape
                             )
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                         text = it,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         style = AppTypography.labelMedium
                     )
                 }
@@ -338,7 +371,9 @@ private fun SearchScreenPreviewDark() {
                 ),
                 onAddWithCameraPressed = {},
                 onAddManuallyPressed = {},
-                onBookClicked = {}
+                onBookClicked = {},
+                onNavigateToSearchSettings = {},
+                onNavigateToSettings = {},
             )
         }
     }
