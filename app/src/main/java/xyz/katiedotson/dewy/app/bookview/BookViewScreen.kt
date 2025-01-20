@@ -15,7 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -71,26 +72,31 @@ fun BookViewScreen(
                 ) {
                     TextProperty(
                         propertyName = "Title",
-                        propertyValue = book.title
+                        propertyValue = book.title,
+                        onEdit = {}
                     )
                     TextProperty(
                         propertyName = "Author",
-                        propertyValue = book.authors.joinToString()
+                        propertyValue = book.authors.joinToString(),
+                        onEdit = {}
                     )
                     TextProperty(
                         propertyName = "Publisher",
-                        propertyValue = book.publisher
+                        propertyValue = book.publisher,
+                        onEdit = {}
                     )
                     MultiTextProperty(
                         propertyName = "Subject(s)",
-                        propertyValues = book.subjects
+                        propertyValues = book.subjects,
+                        onEdit = {}
                     )
                     MultiTextProperty(
                         propertyName = "Language(s)",
                         propertyValues = book.languages,
+                        onEdit = {}
                     )
                     ActionButtons(
-                        onNavigateBack
+                        onClick = onNavigateBack
                     )
                 }
             }
@@ -102,16 +108,28 @@ fun BookViewScreen(
 private fun TextProperty(
     propertyName: String,
     propertyValue: String,
+    onEdit: () -> Unit,
 ) {
     Text(
         text = propertyName,
         style = MaterialTheme.typography.labelSmall,
     )
-    Text(
-        text = propertyValue,
-        style = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = propertyValue,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        IconButton(onEdit) {
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = "Edit"
+            )
+        }
+    }
 
     HorizontalDivider(
         modifier = Modifier.padding(vertical = 20.dp)
@@ -125,13 +143,25 @@ private fun TextProperty(
 @Composable
 private fun MultiTextProperty(
     propertyName: String,
-    propertyValues: List<String>
+    propertyValues: List<String>,
+    onEdit: () -> Unit,
 ) {
-    Text(
-        text = propertyName,
-        style = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = propertyName,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        IconButton(onEdit) {
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = "Edit"
+            )
+        }
+    }
     Spacer(
         modifier = Modifier.padding(vertical = 4.dp)
     )
@@ -162,7 +192,7 @@ private fun MultiTextProperty(
 }
 
 @Composable
-fun ActionButtons(onNavigateBack: () -> Unit) {
+fun ActionButtons(onClick: () -> Unit) {
     Row(
         modifier = Modifier.padding(top = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -170,13 +200,8 @@ fun ActionButtons(onNavigateBack: () -> Unit) {
         Spacer(
             modifier = Modifier.weight(1f)
         )
-        OutlinedButton(onClick = onNavigateBack) {
-            Text(text = "Go Back", style = AppTypography.labelLarge)
-        }
-        Button(
-            onClick = {}
-        ) {
-            Text(text = "Edit", style = AppTypography.labelLarge)
+        OutlinedButton(onClick = onClick) {
+            Text(text = "Done", style = AppTypography.labelLarge)
         }
     }
 }
