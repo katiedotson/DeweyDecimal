@@ -17,6 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import xyz.katiedotson.dewy.MainDispatcherRule
+import xyz.katiedotson.dewy.model.UserSubject
 
 @RunWith(RobolectricTestRunner::class)
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -269,6 +270,113 @@ class BookInputViewModelTest {
         // Assert: Check that the error event was emitted when save fails
         val events = viewModel.events.first()
         assertThat(events).contains(Event.Error)
+    }
+
+    @Test
+    fun `onSave includes selected added subjects when saving book`() = runTest {
+        // Arrange
+        val mockSaveBookToLibrary = mockk<SaveBookToLibraryUseCase>(relaxed = true)
+        coEvery { mockSaveBookToLibrary(any()) } returns Result.success(Unit)
+
+        val mockSaveBookSubject = mockk<SaveBookSubjectUseCase>(relaxed = true)
+        coEvery { mockSaveBookSubject(any()) } returns Result.success("Fiction")
+
+        val viewModel = initViewModel(
+            mockSaveBookToLibrary = mockSaveBookToLibrary,
+            mockSaveBookSubject = mockSaveBookSubject,
+        )
+        val savedBookInputSlot = slot<SavedBookInput>()
+
+        // Set initial fields with a valid title and author
+        viewModel.onTitleValueChange(TextFieldValue("Valid Title"))
+        viewModel.onLanguageChipStateChange(0)
+        viewModel.onPublishersChipStateChange(0)
+
+        // Add a subject and select it
+        viewModel.onSaveSubject("Fiction")
+
+        // Act: Trigger the save action
+        viewModel.onSave()
+
+        // Ensure coroutines finish before verifying
+        advanceUntilIdle()
+
+        // Assert: Verify that saveBookToLibrary was called and includes the selected subjects
+        coVerify { mockSaveBookToLibrary(capture(savedBookInputSlot)) }
+
+        // Assert: Check the captured SavedBookInput to ensure subjects are saved
+        assertThat(savedBookInputSlot.captured.title).isEqualTo("Valid Title")
+        assertThat(savedBookInputSlot.captured.subjects).contains("Fiction")
+    }
+
+    @Test
+    fun `onSave includes selected existing subjects when saving book`() = runTest {
+        // Arrange
+        val mockSaveBookToLibrary = mockk<SaveBookToLibraryUseCase>(relaxed = true)
+        coEvery { mockSaveBookToLibrary(any()) } returns Result.success(Unit)
+
+        val getBookSubjects = mockk<GetAllBookSubjectsUseCase>(relaxed = true)
+        coEvery { getBookSubjects() } returns Result.success(listOf(UserSubject(name = "SUBJECT_ONE", userId = "")))
+
+        val viewModel = initViewModel(
+            mockSaveBookToLibrary = mockSaveBookToLibrary,
+            mockGetAllBookSubjects = getBookSubjects,
+        )
+        val savedBookInputSlot = slot<SavedBookInput>()
+
+        viewModel.onLanguageChipStateChange(0)
+        viewModel.onPublishersChipStateChange(0)
+
+        // Add a subject and select it
+        viewModel.onSubjectChipStateChange(0)
+
+        // Act: Trigger the save action
+        viewModel.onSave()
+
+        // Ensure coroutines finish before verifying
+        advanceUntilIdle()
+
+        // Assert: Verify that saveBookToLibrary was called and includes the selected subjects
+        coVerify { mockSaveBookToLibrary(capture(savedBookInputSlot)) }
+
+        // Assert: Check the captured SavedBookInput to ensure subjects are saved
+        assertThat(savedBookInputSlot.captured.subjects).contains("SUBJECT_ONE")
+    }
+
+    @Test
+    fun `onSave does not include added subjects if unselected when saving book`() = runTest {
+        // Arrange
+        val mockSaveBookToLibrary = mockk<SaveBookToLibraryUseCase>(relaxed = true)
+        coEvery { mockSaveBookToLibrary(any()) } returns Result.success(Unit)
+
+        val mockSaveBookSubject = mockk<SaveBookSubjectUseCase>(relaxed = true)
+        coEvery { mockSaveBookSubject(any()) } returns Result.success("Fiction")
+
+        val viewModel = initViewModel(
+            mockSaveBookToLibrary = mockSaveBookToLibrary,
+            mockSaveBookSubject = mockSaveBookSubject,
+        )
+        val savedBookInputSlot = slot<SavedBookInput>()
+
+        // Set initial fields
+        viewModel.onLanguageChipStateChange(0)
+        viewModel.onPublishersChipStateChange(0)
+
+        // Add a subject and select it
+        viewModel.onSaveSubject("Fiction")
+        viewModel.onSubjectChipStateChange(0)
+
+        // Act: Trigger the save action
+        viewModel.onSave()
+
+        // Ensure coroutines finish before verifying
+        advanceUntilIdle()
+
+        // Assert: Verify that saveBookToLibrary was called and includes the selected subjects
+        coVerify { mockSaveBookToLibrary(capture(savedBookInputSlot)) }
+
+        // Assert: Check the captured SavedBookInput to ensure subjects are saved
+        assertThat(savedBookInputSlot.captured.subjects).isEmpty()
     }
 
     companion object {

@@ -292,7 +292,7 @@ class BookInputViewModel @Inject constructor(
                 .filter { it.isSelected }
                 .map { it.display }
                 .first(),
-            subjects = listOf()
+            subjects = _allBookSubjects.value.filter { it.isApplied }.map { it.display }
         )
     }
 }
