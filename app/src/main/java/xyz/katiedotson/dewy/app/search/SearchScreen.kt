@@ -40,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -105,6 +104,7 @@ internal fun SearchScreen(
 
     LaunchedEffect(savedBookTitle) {
         if (savedBookTitle != null) {
+            searchViewModel.loadBooks()
             val result = snackbarHostState.showSnackbar(
                 message = "$savedBookTitle was successfully saved to your library.",
                 withDismissAction = true
@@ -113,10 +113,6 @@ internal fun SearchScreen(
                 onSavedBookSnackDismissed()
             }
         }
-    }
-
-    LaunchedEffect(Unit) {
-        searchViewModel.loadBooks()
     }
 
     Loader(isVisible = isLoading)
@@ -307,7 +303,7 @@ private fun BookCardPreview() {
 @PreviewLightDark
 @PreviewScreenSizes
 @Suppress("LongMethod")
-private fun SearchScreenPreviewDark() {
+private fun SearchScreenPreview() {
     DeweyDecimalTheme {
         Surface {
             ScreenContent(
@@ -367,7 +363,6 @@ private fun SearchScreenPreviewDark() {
                         languages = listOf("English"),
                         subjects = listOf("Romance", "Classic", "Social Commentary")
                     )
-
                 ),
                 onAddWithCameraPressed = {},
                 onAddManuallyPressed = {},
