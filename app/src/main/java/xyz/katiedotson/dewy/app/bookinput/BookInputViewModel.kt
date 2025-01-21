@@ -28,6 +28,26 @@ class BookInputViewModel @Inject constructor(
 
     private val key = savedStateHandle.toRoute<BookInputRoute>().bookId
 
+    private val _state = MutableStateFlow(
+        BookInputState(
+            titleState = TextFieldValue(),
+            titleError = false,
+            authors = listOf(),
+            authorsError = false,
+            languages = listOf(),
+            languageError = false,
+            publishers = listOf(),
+            publisherError = false,
+        )
+    )
+    val state = _state.asStateFlow()
+
+    private val _allBookSubjects = MutableStateFlow<ImmutableList<SubjectState>>(persistentListOf())
+    val allBookSubjects = _allBookSubjects.asStateFlow()
+
+    private val _events = MutableStateFlow<List<Event>>(listOf())
+    val events = _events.asStateFlow()
+
     init {
         viewModelScope.launch {
             getBookInputModel(
@@ -60,6 +80,9 @@ class BookInputViewModel @Inject constructor(
                     )
                 }
             }.onFailure { e ->
+                _events.update { current ->
+                    current + Event.Error
+                }
                 Timber.e(e)
             }
         }
@@ -80,29 +103,12 @@ class BookInputViewModel @Inject constructor(
                         }
                 }.onFailure { e ->
                     Timber.e(e)
+                    _events.update { current ->
+                        current + Event.Error
+                    }
                 }
         }
     }
-
-    private val _state = MutableStateFlow(
-        BookInputState(
-            titleState = TextFieldValue(),
-            titleError = false,
-            authors = listOf(),
-            authorsError = false,
-            languages = listOf(),
-            languageError = false,
-            publishers = listOf(),
-            publisherError = false,
-        )
-    )
-    val state = _state.asStateFlow()
-
-    private val _allBookSubjects = MutableStateFlow<ImmutableList<SubjectState>>(persistentListOf())
-    val allBookSubjects = _allBookSubjects.asStateFlow()
-
-    private val _events = MutableStateFlow<List<Event>>(listOf())
-    val events = _events.asStateFlow()
 
     fun onTitleValueChange(textFieldValue: TextFieldValue) {
         _state.update { current ->
@@ -276,9 +282,11 @@ class BookInputViewModel @Inject constructor(
             authors = this.authors.map {
                 it.text
             },
-            languages = this.languages.map {
-                it.display
-            },
+            languages = this.languages
+                .filter { it.isSelected }
+                .map {
+                    it.display
+                },
             publisher = this
                 .publishers
                 .filter { it.isSelected }
